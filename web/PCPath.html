@@ -8,9 +8,10 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
+    --font-color: #e0e0e0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #0f0f0f;
-    color: #e0e0e0;
+    color: var(--font-color);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -22,11 +23,19 @@
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
-    color: #fff;
+    color: var(--font-color);
+  }
+
+  .version {
+    font-size: 0.7rem;
+    font-weight: 400;
+    opacity: 0.35;
+    vertical-align: middle;
   }
 
   .subtitle {
-    color: #888;
+    color: var(--font-color);
+    opacity: 0.55;
     font-size: 0.9rem;
     margin-bottom: 2rem;
   }
@@ -47,7 +56,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #888;
+    color: var(--font-color);
+    opacity: 0.55;
     margin-bottom: 0.4rem;
   }
 
@@ -59,7 +69,7 @@
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
-    color: #e0e0e0;
+    color: var(--font-color);
     font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
     font-size: 0.9rem;
     line-height: 1.5;
@@ -94,7 +104,8 @@
   .arrow {
     text-align: center;
     font-size: 1.5rem;
-    color: #555;
+    color: var(--font-color);
+    opacity: 0.35;
     margin-bottom: 1.25rem;
     user-select: none;
   }
@@ -117,7 +128,8 @@
   .mappings-toggle {
     background: none;
     border: none;
-    color: #666;
+    color: var(--font-color);
+    opacity: 0.45;
     font-size: 0.8rem;
     cursor: pointer;
     margin-top: 1.5rem;
@@ -128,7 +140,7 @@
     transition: color 0.15s;
   }
 
-  .mappings-toggle:hover { color: #aaa; }
+  .mappings-toggle:hover { opacity: 0.7; }
   .mappings-toggle .chevron { transition: transform 0.2s; }
   .mappings-toggle.open .chevron { transform: rotate(90deg); }
 
@@ -154,7 +166,7 @@
     background: #111;
     border: 1px solid #333;
     border-radius: 4px;
-    color: #e0e0e0;
+    color: var(--font-color);
     font-family: "SF Mono", Consolas, monospace;
     font-size: 0.85rem;
     padding: 0.35rem 0.5rem;
@@ -320,38 +332,26 @@
 
   .theme-hex-apply:hover { background: #333; color: #fff; }
 
-  /* Light theme adjustments */
-  body.light-theme { color: #222; }
-  body.light-theme h1 { color: #111; }
-  body.light-theme .subtitle { color: #777; }
-  body.light-theme .path-box label { color: #777; }
-  body.light-theme .path-box textarea { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #222; }
+  /* Light theme adjustments (UI chrome only — font colors handled by --font-color) */
+  body.light-theme .path-box textarea { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); }
   body.light-theme .path-box textarea:focus { border-color: rgba(0,0,0,0.3); }
-  body.light-theme .path-box textarea::placeholder { color: #aaa; }
-  body.light-theme .copy-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
-  body.light-theme .copy-btn:hover { background: rgba(0,0,0,0.1); color: #333; }
-  body.light-theme .arrow { color: #bbb; }
-  body.light-theme .mappings-toggle { color: #999; }
-  body.light-theme .mappings-toggle:hover { color: #555; }
+  body.light-theme .path-box textarea::placeholder { color: rgba(0,0,0,0.3); }
+  body.light-theme .copy-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
+  body.light-theme .copy-btn:hover { background: rgba(0,0,0,0.1); }
   body.light-theme .mappings-panel { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
-  body.light-theme .mappings-panel input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #222; }
-  body.light-theme .mappings-panel .eq { color: #bbb; }
-  body.light-theme .mapping-remove { color: #bbb; }
-  body.light-theme .mapping-actions button { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
-  body.light-theme .mapping-actions button:hover { background: rgba(0,0,0,0.1); color: #333; }
-  body.light-theme .hint { color: #aaa; }
+  body.light-theme .mappings-panel input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
+  body.light-theme .mapping-actions button { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
+  body.light-theme .mapping-actions button:hover { background: rgba(0,0,0,0.1); }
   body.light-theme .theme-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
   body.light-theme .theme-btn:hover { background: rgba(0,0,0,0.1); }
   body.light-theme .theme-swatch { border-color: rgba(0,0,0,0.2); }
   body.light-theme .theme-dropdown { background: #f5f5f5; border-color: rgba(0,0,0,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-  body.light-theme .theme-option { color: #444; }
+  body.light-theme .theme-option { color: var(--font-color); }
   body.light-theme .theme-option:hover { background: rgba(0,0,0,0.06); }
   body.light-theme .theme-option .swatch { border-color: rgba(0,0,0,0.2); }
   body.light-theme .theme-hex-row { border-color: rgba(0,0,0,0.1); }
-  body.light-theme .theme-hex-row label { color: #888; }
-  body.light-theme .theme-hex-input { background: #fff; border-color: rgba(0,0,0,0.15); color: #222; }
-  body.light-theme .theme-hex-apply { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
-  body.light-theme .theme-hex-apply:hover { background: rgba(0,0,0,0.1); color: #333; }
+  body.light-theme .theme-hex-input { background: #fff; border-color: rgba(0,0,0,0.15); color: var(--font-color); }
+  body.light-theme .theme-hex-apply { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
 </style>
 </head>
 <body>
@@ -363,30 +363,33 @@
     <span id="theme-label">Theme</span>
   </button>
   <div class="theme-dropdown" id="theme-dropdown">
-    <button class="theme-option" data-color="#0f0f0f" data-light="false">
+    <button class="theme-option" data-color="#0f0f0f" data-font="#e0e0e0" data-light="false">
       <span class="swatch" style="background:#0f0f0f"></span> Dark (Default)
     </button>
-    <button class="theme-option" data-color="#000000" data-light="false">
-      <span class="swatch" style="background:#000000"></span> Black
-    </button>
-    <button class="theme-option" data-color="#ffffff" data-light="true">
+    <button class="theme-option" data-color="#ffffff" data-font="#222222" data-light="true">
       <span class="swatch" style="background:#ffffff"></span> White
     </button>
-    <button class="theme-option" data-color="#ffc0cb" data-light="true">
+    <button class="theme-option" data-color="#ffc0cb" data-font="#4a2030" data-light="true">
       <span class="swatch" style="background:#ffc0cb"></span> Pink
     </button>
-    <button class="theme-option" data-color="#a8e6cf" data-light="true">
+    <button class="theme-option" data-color="#a8e6cf" data-font="#1a3a2a" data-light="true">
       <span class="swatch" style="background:#a8e6cf"></span> Mint Green
     </button>
     <div class="theme-hex-row">
-      <label>#</label>
-      <input class="theme-hex-input" id="hex-input" placeholder="hex code" maxlength="6" spellcheck="false">
+      <label>BG #</label>
+      <input class="theme-hex-input" id="hex-input" placeholder="background" maxlength="6" spellcheck="false">
       <button class="theme-hex-apply" id="hex-apply">Apply</button>
+    </div>
+    <div class="theme-hex-row">
+      <label>Font #</label>
+      <input class="theme-hex-input" id="font-hex-input" placeholder="font color" maxlength="6" spellcheck="false">
+      <button class="theme-hex-apply" id="font-hex-apply">Apply</button>
+      <button class="theme-hex-apply" id="font-hex-auto" title="Reset to auto-detected font color">Auto</button>
     </div>
   </div>
 </div>
 
-<h1>PCPath</h1>
+<h1>PCPath <span class="version">v1.1.0</span></h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
 
 <div class="container">
@@ -679,6 +682,13 @@ const themeSwatch = document.getElementById("theme-swatch");
 const themeLabel = document.getElementById("theme-label");
 const hexInput = document.getElementById("hex-input");
 const hexApply = document.getElementById("hex-apply");
+const fontHexInput = document.getElementById("font-hex-input");
+const fontHexApply = document.getElementById("font-hex-apply");
+const fontHexAuto = document.getElementById("font-hex-auto");
+
+let currentBg = "#0f0f0f";
+let currentFont = "#e0e0e0";
+let isCustomFont = false;
 
 function isLightColor(hex) {
   hex = hex.replace("#", "");
@@ -686,59 +696,97 @@ function isLightColor(hex) {
   const r = parseInt(hex.substr(0,2), 16);
   const g = parseInt(hex.substr(2,2), 16);
   const b = parseInt(hex.substr(4,2), 16);
-  // Perceived brightness
   return (r * 299 + g * 587 + b * 114) / 1000 > 140;
 }
 
-function applyTheme(color, light) {
-  document.body.style.background = color;
-  themeSwatch.style.background = color;
+function autoFontColor(bgHex) {
+  return isLightColor(bgHex) ? "#222222" : "#e0e0e0";
+}
 
-  if (light) {
+function applyTheme(bgColor, fontColor, customFont) {
+  currentBg = bgColor;
+  currentFont = fontColor;
+  isCustomFont = customFont;
+
+  document.body.style.background = bgColor;
+  document.body.style.setProperty("--font-color", fontColor);
+  themeSwatch.style.background = bgColor;
+
+  if (isLightColor(bgColor)) {
     document.body.classList.add("light-theme");
   } else {
     document.body.classList.remove("light-theme");
   }
 
-  localStorage.setItem(THEME_KEY, JSON.stringify({ color, light }));
+  localStorage.setItem(THEME_KEY, JSON.stringify({ bgColor, fontColor, isCustomFont: customFont }));
 }
 
 function loadTheme() {
   try {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved) {
-      const { color, light } = JSON.parse(saved);
-      applyTheme(color, light);
-      return;
+      const data = JSON.parse(saved);
+      if (data.bgColor) {
+        applyTheme(data.bgColor, data.fontColor || autoFontColor(data.bgColor), data.isCustomFont || false);
+        return;
+      }
+      // Handle old format
+      if (data.color) {
+        const font = autoFontColor(data.color);
+        applyTheme(data.color, font, false);
+        return;
+      }
     }
   } catch {}
   // Default
-  themeSwatch.style.background = "#0f0f0f";
+  applyTheme("#0f0f0f", "#e0e0e0", false);
 }
 
 // Preset buttons
 themeDropdown.querySelectorAll(".theme-option").forEach(btn => {
   btn.addEventListener("click", () => {
-    const color = btn.dataset.color;
-    const light = btn.dataset.light === "true";
-    applyTheme(color, light);
+    const bg = btn.dataset.color;
+    const font = btn.dataset.font;
+    applyTheme(bg, font, false);
+    fontHexInput.value = "";
     themeDropdown.classList.remove("open");
   });
 });
 
-// Custom hex
-function applyHex() {
+// Custom BG hex
+function applyBgHex() {
   let val = hexInput.value.trim().replace(/^#/, "");
   if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
-    const color = "#" + val;
-    applyTheme(color, isLightColor(val));
+    const bg = "#" + val;
+    const font = isCustomFont ? currentFont : autoFontColor(bg);
+    applyTheme(bg, font, isCustomFont);
     themeDropdown.classList.remove("open");
   }
 }
 
-hexApply.addEventListener("click", applyHex);
+hexApply.addEventListener("click", applyBgHex);
 hexInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") applyHex();
+  if (e.key === "Enter") applyBgHex();
+});
+
+// Custom font hex
+function applyFontHex() {
+  let val = fontHexInput.value.trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
+    applyTheme(currentBg, "#" + val, true);
+  }
+}
+
+fontHexApply.addEventListener("click", applyFontHex);
+fontHexInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") applyFontHex();
+});
+
+// Auto reset font color
+fontHexAuto.addEventListener("click", () => {
+  const font = autoFontColor(currentBg);
+  fontHexInput.value = "";
+  applyTheme(currentBg, font, false);
 });
 
 // Toggle dropdown

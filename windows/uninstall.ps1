@@ -13,7 +13,9 @@ Write-Host "Uninstalling PCPath..."
 $RegPaths = @(
     "HKCU:\Software\Classes\*\shell\CopyAsMacPath",
     "HKCU:\Software\Classes\Directory\shell\CopyAsMacPath",
-    "HKCU:\Software\Classes\Directory\Background\shell\CopyAsMacPath"
+    "HKCU:\Software\Classes\Directory\Background\shell\CopyAsMacPath",
+    "HKCU:\Software\Classes\Directory\Background\shell\ConvertToPCPath",
+    "HKCU:\Software\Classes\DesktopBackground\shell\ConvertToPCPath"
 )
 
 foreach ($path in $RegPaths) {

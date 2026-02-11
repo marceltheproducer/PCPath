@@ -18,10 +18,10 @@
 					<key>Container</key>
 					<string>List</string>
 					<key>Optional</key>
-					<false/>
+					<true/>
 					<key>Types</key>
 					<array>
-						<string>com.apple.cocoa.string</string>
+						<string>com.apple.cocoa.path</string>
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
@@ -139,7 +139,7 @@ fi</string>
 	<key>workflowMetaData</key>
 	<dict>
 		<key>serviceInputTypeIdentifier</key>
-		<string>com.apple.Automator.text</string>
+		<string>com.apple.Automator.fileSystemObject</string>
 		<key>workflowTypeIdentifier</key>
 		<string>com.apple.Automator.servicesMenu</string>
 	</dict>

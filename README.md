@@ -1,6 +1,6 @@
 # PCPath
 
-Cross-platform tool for converting file paths between Mac and Windows. Mac users get a right-click option to copy a PC path; Windows users get a right-click option to copy a Mac path. Both platforms share the same config file format so your IT team can set it up once.
+Cross-platform tool for converting file paths between Mac and Windows. Both platforms get right-click actions to convert paths in both directions — copy a file's path for the other OS, or convert a path from the clipboard. Both platforms share the same config file format so your IT team can set it up once.
 
 ## What It Does
 
@@ -44,10 +44,12 @@ cd PCPath
 
 This installs two Quick Actions and sets up the config file:
 
-| Quick Action | Where it appears | What it does |
-|---|---|---|
-| **Copy as PC Path** | Finder right-click > Quick Actions | Converts a Mac file path to a PC path and copies to clipboard |
-| **Convert to Mac Path** | Select text in any app > right-click > Services | Converts a PC path to a Mac path and copies to clipboard |
+| Quick Action | What it does |
+|---|---|
+| **Copy as PC Path** | Converts the selected file's path to a PC path and copies to clipboard |
+| **Convert to Mac Path** | Converts a PC path on your clipboard to a Mac path |
+
+Both appear in **Finder right-click > Quick Actions**.
 
 ### Uninstall (macOS)
 
@@ -73,14 +75,12 @@ cd PCPath\windows
 .\install.ps1
 ```
 
-This adds a **"Copy as Mac Path"** entry to the right-click context menu for files and folders.
+This adds two context menu entries:
 
-There's also a bonus utility for when a Mac user sends you a path:
-
-```powershell
-# Converts a Mac path on your clipboard to a PC path
-~\.pcpath\convert_to_pc_path.ps1
-```
+| Context Menu Action | Where it appears | What it does |
+|---|---|---|
+| **Copy as Mac Path** | Right-click any file or folder | Converts the selected file's path to a Mac path and copies to clipboard |
+| **Convert to PC Path** | Right-click empty space in a folder or desktop | Converts a Mac path on your clipboard to a PC path |
 
 ### Uninstall (Windows)
 
@@ -100,8 +100,8 @@ There's also a bonus utility for when a Mac user sends you a path:
 3. Paste the Windows path wherever you need it
 
 **Converting a PC path you received:**
-1. Select the PC path text in any app (Slack, email, etc.)
-2. Right-click > **Services** > **Convert to Mac Path**
+1. Copy the PC path to your clipboard (from Slack, email, etc.)
+2. Right-click any file in Finder > **Quick Actions** > **Convert to Mac Path**
 3. The Mac path is now on your clipboard — paste it into Finder's "Go to Folder" (Cmd+Shift+G)
 
 ### On Windows
@@ -113,7 +113,7 @@ There's also a bonus utility for when a Mac user sends you a path:
 
 **Converting a Mac path you received:**
 1. Copy the Mac path to your clipboard
-2. Run `~\.pcpath\convert_to_pc_path.ps1` in PowerShell
+2. Right-click empty space in a folder or on the desktop > **Convert to PC Path**
 3. The PC path is now on your clipboard
 
 ---
@@ -239,7 +239,7 @@ PCPath/
 ├── paste_mac_path.sh                   # PC → Mac conversion
 ├── pcpath_mappings.default             # Default config template
 ├── Copy as PC Path.workflow/           # Finder Quick Action
-├── Convert to Mac Path.workflow/       # Text Services Quick Action
+├── Convert to Mac Path.workflow/       # Finder Quick Action (clipboard)
 ├── kandji/
 │   ├── build_pkg.sh                    # Builds .pkg for Kandji/MDM deployment
 │   ├── entitlements.plist              # Hardened runtime entitlements for workflows
@@ -252,5 +252,5 @@ PCPath/
     ├── install.ps1                     # Windows installer
     ├── uninstall.ps1                   # Windows uninstaller
     ├── copy_mac_path.ps1               # PC → Mac conversion (context menu)
-    └── convert_to_pc_path.ps1          # Mac → PC conversion (clipboard utility)
+    └── convert_to_pc_path.ps1          # Mac → PC conversion (context menu)
 ```

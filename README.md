@@ -1,19 +1,19 @@
 # PCPath
 
-A macOS Quick Action that adds a **"Copy as PC Path"** option to the right-click menu in Finder. It converts Mac file paths to Windows-style paths and copies them to your clipboard.
+Cross-platform tool for converting file paths between Mac and Windows. Mac users get a right-click option to copy a PC path; Windows users get a right-click option to copy a Mac path. Both platforms share the same config file format so your IT team can set it up once.
 
 ## What It Does
 
-When you right-click a file or folder on a mounted server volume, it converts the Mac path to a Windows/PC path:
-
-| Mac Path | PC Path |
+| You have | You get |
 |---|---|
 | `/Volumes/CONTENT/Projects/video.mp4` | `K:\Projects\video.mp4` |
+| `K:\Projects\video.mp4` | `/Volumes/CONTENT/Projects/video.mp4` |
 | `/Volumes/GFX/Assets/logo.png` | `G:\Assets\logo.png` |
 | `/Volumes/EDIT/Sessions/project.prproj` | `E:\Sessions\project.prproj` |
 | `/Volumes/THE_NETWORK/Shared/doc.pdf` | `N:\Shared\doc.pdf` |
+| `/Volumes/UNKNOWN/file.txt` | `?:\file.txt` (placeholder — fill in the drive letter) |
 
-## Drive Letter Mappings
+## Default Drive Mappings
 
 | Volume | Drive Letter |
 |---|---|
@@ -22,51 +22,140 @@ When you right-click a file or folder on a mounted server volume, it converts th
 | EDIT | E: |
 | THE_NETWORK | N: |
 
-## Installation
+These are the defaults. You can customize them — see [Configuration](#configuration) below.
 
-### Quick Install (recommended)
+---
 
-1. Double-click the **`Copy as PC Path.workflow`** file
-2. macOS will ask if you want to install the Quick Action — click **Install**
-3. Done! Right-click any file in Finder and look under **Quick Actions** for **"Copy as PC Path"**
+## macOS Installation
 
-### Manual Install
+```bash
+git clone <this-repo>
+cd PCPath
+./install.sh
+```
 
-1. Copy the `Copy as PC Path.workflow` folder to:
-   ```
-   ~/Library/Services/
-   ```
-2. The Quick Action will appear in Finder's right-click menu under **Quick Actions**
+This installs two Quick Actions and sets up the config file:
 
-### Build It Yourself in Automator
+| Quick Action | Where it appears | What it does |
+|---|---|---|
+| **Copy as PC Path** | Finder right-click > Quick Actions | Converts a Mac file path to a PC path and copies to clipboard |
+| **Convert to Mac Path** | Select text in any app > right-click > Services | Converts a PC path to a Mac path and copies to clipboard |
 
-If the `.workflow` file doesn't install cleanly on your macOS version:
+### Uninstall (macOS)
 
-1. Open **Automator** (`/Applications/Automator.app`)
-2. Choose **Quick Action** as the document type
-3. Set **"Workflow receives current"** to **files or folders** in **Finder**
-4. Drag a **Run Shell Script** action into the workflow
-5. Set **Shell** to `/bin/bash` and **Pass input** to `as arguments`
-6. Paste the contents of `copy_pc_path.sh` from this repo into the script box
-7. Save as **"Copy as PC Path"**
+```bash
+./uninstall.sh
+```
+
+---
+
+## Windows Installation
+
+Open PowerShell and run:
+
+```powershell
+git clone <this-repo>
+cd PCPath\windows
+.\install.ps1
+```
+
+This adds a **"Copy as Mac Path"** entry to the right-click context menu for files and folders.
+
+There's also a bonus utility for when a Mac user sends you a path:
+
+```powershell
+# Converts a Mac path on your clipboard to a PC path
+~\.pcpath\convert_to_pc_path.ps1
+```
+
+### Uninstall (Windows)
+
+```powershell
+.\uninstall.ps1
+```
+
+---
 
 ## Usage
 
-1. In Finder, right-click (or Control-click) any file or folder on a mounted volume
+### On Mac
+
+**Copying a PC path for a Windows user:**
+1. Right-click a file or folder on a mounted volume in Finder
 2. Go to **Quick Actions** > **Copy as PC Path**
-3. The converted Windows path is now on your clipboard — just paste it wherever you need it
+3. Paste the Windows path wherever you need it
 
-## Adding More Drive Mappings
+**Converting a PC path you received:**
+1. Select the PC path text in any app (Slack, email, etc.)
+2. Right-click > **Services** > **Convert to Mac Path**
+3. The Mac path is now on your clipboard — paste it into Finder's "Go to Folder" (Cmd+Shift+G)
 
-To add more volume-to-drive-letter mappings, edit the script inside the workflow:
+### On Windows
 
-1. Open Automator (`/Applications/Automator.app`)
-2. Open `~/Library/Services/Copy as PC Path.workflow`
-3. In the shell script, add entries to the two arrays:
-   ```bash
-   declare -a vol_names=("CONTENT" "GFX" "EDIT" "THE_NETWORK" "NEW_VOLUME")
-   declare -a drive_letters=("K" "G" "E" "N" "X")
-   ```
-4. Save the workflow
+**Copying a Mac path for a Mac user:**
+1. Right-click a file or folder
+2. Click **Copy as Mac Path**
+3. Paste the Mac path wherever you need it
 
-Alternatively, edit `copy_pc_path.sh` in this repo and reinstall the workflow.
+**Converting a Mac path you received:**
+1. Copy the Mac path to your clipboard
+2. Run `~\.pcpath\convert_to_pc_path.ps1` in PowerShell
+3. The PC path is now on your clipboard
+
+---
+
+## Configuration
+
+Both platforms read mappings from the same config file format:
+
+| Platform | Config file location |
+|---|---|
+| macOS | `~/.pcpath_mappings` |
+| Windows | `%USERPROFILE%\.pcpath_mappings` |
+
+The file format is one mapping per line:
+
+```
+# Lines starting with # are comments
+CONTENT=K
+GFX=G
+EDIT=E
+THE_NETWORK=N
+```
+
+To add a new volume, just add a line. Changes take effect immediately — no reinstall required.
+
+### IT Deployment
+
+To set this up for your team:
+1. Install PCPath on each machine (Mac or Windows)
+2. Distribute a standard `pcpath_mappings` config file to `~/.pcpath_mappings` (macOS) or `%USERPROFILE%\.pcpath_mappings` (Windows)
+3. If mappings change, just update the config file — no reinstall needed
+
+---
+
+## How It Works
+
+- **macOS**: Automator Quick Actions call shell scripts installed at `~/.pcpath/`
+- **Windows**: PowerShell scripts installed at `%USERPROFILE%\.pcpath\`, triggered via context menu registry entries
+- **Config**: Both platforms read the same `pcpath_mappings` format so mappings stay in sync
+- **Unmapped volumes**: If a volume/drive isn't in the config, the path uses `?` as a placeholder (e.g. `?:\folder\file.txt`) so it's obvious you need to fill in the letter
+
+## File Structure
+
+```
+PCPath/
+├── install.sh                          # macOS installer
+├── uninstall.sh                        # macOS uninstaller
+├── pcpath_common.sh                    # Shared config-loading logic
+├── copy_pc_path.sh                     # Mac → PC conversion
+├── paste_mac_path.sh                   # PC → Mac conversion
+├── pcpath_mappings.default             # Default config template
+├── Copy as PC Path.workflow/           # Finder Quick Action
+├── Convert to Mac Path.workflow/       # Text Services Quick Action
+└── windows/
+    ├── install.ps1                     # Windows installer
+    ├── uninstall.ps1                   # Windows uninstaller
+    ├── copy_mac_path.ps1               # PC → Mac conversion (context menu)
+    └── convert_to_pc_path.ps1          # Mac → PC conversion (clipboard utility)
+```

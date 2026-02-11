@@ -1,0 +1,11 @@
+# PCPath drive letter mappings
+# Format: VOLUME_NAME=DRIVE_LETTER
+#
+# Lines starting with # are comments.
+# Add or change mappings as needed for your network.
+# Changes take effect immediately — no reinstall required.
+
+CONTENT=K
+GFX=G
+EDIT=E
+THE_NETWORK=N

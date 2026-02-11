@@ -21,7 +21,7 @@
 					<false/>
 					<key>Types</key>
 					<array>
-						<string>com.apple.cocoa.path</string>
+						<string>com.apple.cocoa.string</string>
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
@@ -63,15 +63,15 @@
 # PCPath - Delegates to installed script for config file support.
 # If not installed via install.sh, shows a notification.
 
-if [[ -x "$HOME/.pcpath/copy_pc_path.sh" ]]; then
-    "$HOME/.pcpath/copy_pc_path.sh" "$@"
+if [[ -x "$HOME/.pcpath/paste_mac_path.sh" ]]; then
+    "$HOME/.pcpath/paste_mac_path.sh"
 else
     osascript -e 'display notification "Run install.sh from the PCPath repo first." with title "PCPath"'
 fi</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
-					<integer>1</integer>
+					<integer>0</integer>
 					<key>shell</key>
 					<string>/bin/bash</string>
 					<key>source</key>
@@ -92,7 +92,7 @@ fi</string>
 				<key>Class Name</key>
 				<string>RunShellScriptAction</string>
 				<key>InputUUID</key>
-				<string>A1A2A3A4-B1B2-C1C2-D1D2-E1E2E3E4E5E6</string>
+				<string>B2B3B4B5-C2C3-D2D3-E2E3-F2F3F4F5F6F7</string>
 				<key>Keywords</key>
 				<array>
 					<string>Shell</string>
@@ -102,9 +102,9 @@ fi</string>
 					<string>Unix</string>
 				</array>
 				<key>OutputUUID</key>
-				<string>F1F2F3F4-A1A2-B1B2-C1C2-D1D2D3D4D5D6</string>
+				<string>C3C4C5C6-D3D4-E3E4-F3F4-A3A4A5A6A7A8</string>
 				<key>UUID</key>
-				<string>11111111-2222-3333-4444-555555555555</string>
+				<string>22222222-3333-4444-5555-666666666666</string>
 				<key>UnlocalizedApplications</key>
 				<array>
 					<string>Automator</string>
@@ -138,6 +138,8 @@ fi</string>
 	<dict/>
 	<key>workflowMetaData</key>
 	<dict>
+		<key>serviceInputTypeIdentifier</key>
+		<string>com.apple.Automator.text</string>
 		<key>workflowTypeIdentifier</key>
 		<string>com.apple.Automator.servicesMenu</string>
 	</dict>

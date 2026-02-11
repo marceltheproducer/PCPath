@@ -14,7 +14,7 @@ param(
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 
 # Build vol name -> drive letter mapping
-$VolToDrive = @{}
+$VolToDrive = [System.Collections.Hashtable]::new([System.StringComparer]::OrdinalIgnoreCase)
 $DefaultMappings = @"
 CONTENT=K
 GFX=G

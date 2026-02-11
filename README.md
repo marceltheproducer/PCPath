@@ -28,6 +28,14 @@ These are the defaults. You can customize them — see [Configuration](#configur
 
 ## macOS Installation
 
+**Quick install (no git required):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/master/remote_install.sh | bash
+```
+
+**Or clone and install manually:**
+
 ```bash
 git clone https://github.com/marceltheproducer/PCPath.git
 cd PCPath
@@ -51,7 +59,13 @@ This installs two Quick Actions and sets up the config file:
 
 ## Windows Installation
 
-Open PowerShell and run:
+**Quick install (no git required) — open PowerShell and run:**
+
+```powershell
+irm https://raw.githubusercontent.com/marceltheproducer/PCPath/master/windows/remote_install.ps1 | iex
+```
+
+**Or clone and install manually:**
 
 ```powershell
 git clone https://github.com/marceltheproducer/PCPath.git
@@ -125,12 +139,54 @@ THE_NETWORK=N
 
 To add a new volume, just add a line. Changes take effect immediately — no reinstall required.
 
-### IT Deployment
+### IT / Manual Deployment
 
-To set this up for your team:
+To set this up for your team without MDM:
 1. Install PCPath on each machine (Mac or Windows)
 2. Distribute a standard `pcpath_mappings` config file to `~/.pcpath_mappings` (macOS) or `%USERPROFILE%\.pcpath_mappings` (Windows)
 3. If mappings change, just update the config file — no reinstall needed
+
+### Kandji / MDM Deployment (macOS)
+
+For pushing PCPath to multiple Macs via Kandji (or any MDM that supports `.pkg` files):
+
+**1. Build the installer package**
+
+On any Mac with Xcode command-line tools installed:
+
+```bash
+git clone https://github.com/marceltheproducer/PCPath.git
+cd PCPath
+./kandji/build_pkg.sh 1.0.0
+```
+
+This produces `kandji/PCPath-1.0.0.pkg`.
+
+**2. Upload to Kandji**
+
+1. Go to **Library > Add New > Custom App**
+2. Set install type to **Package**
+3. Upload `PCPath-1.0.0.pkg`
+4. Assign to your desired device blueprint(s)
+
+**3. (Optional) Add the uninstall script**
+
+In the Custom App settings, paste the contents of `kandji/uninstall_mdm.sh` as the uninstall script. This cleanly removes PCPath from all users on the machine.
+
+**4. (Optional) Push a company-wide config**
+
+To standardize drive mappings, create a Kandji **Custom Script** that writes `~/.pcpath_mappings` to each user's home directory. The config file format is the same one documented above.
+
+**How the package works:**
+
+| Component | Location | Purpose |
+|---|---|---|
+| Shared scripts & workflows | `/usr/local/pcpath/` | Installed by the .pkg (system-wide) |
+| LaunchAgent | `/Library/LaunchAgents/com.pcpath.user-setup.plist` | Triggers per-user setup at login |
+| Per-user files | `~/.pcpath/`, `~/Library/Services/` | Copied from system dir on first login |
+| Config | `~/.pcpath_mappings` | Created from template on first login (not overwritten on upgrades) |
+
+**Upgrading:** Bump the version number (`./kandji/build_pkg.sh 1.1.0`) and re-upload. The per-user setup automatically re-runs on next login when it detects a new version.
 
 ---
 
@@ -145,6 +201,7 @@ To set this up for your team:
 
 ```
 PCPath/
+├── remote_install.sh                   # macOS one-liner installer
 ├── install.sh                          # macOS installer
 ├── uninstall.sh                        # macOS uninstaller
 ├── pcpath_common.sh                    # Shared config-loading logic
@@ -153,7 +210,14 @@ PCPath/
 ├── pcpath_mappings.default             # Default config template
 ├── Copy as PC Path.workflow/           # Finder Quick Action
 ├── Convert to Mac Path.workflow/       # Text Services Quick Action
+├── kandji/
+│   ├── build_pkg.sh                    # Builds .pkg for Kandji/MDM deployment
+│   ├── postinstall                     # pkg postinstall script (runs as root)
+│   ├── user_setup.sh                   # Per-user setup (runs at login)
+│   ├── com.pcpath.user-setup.plist     # LaunchAgent for login-time setup
+│   └── uninstall_mdm.sh               # MDM uninstall script
 └── windows/
+    ├── remote_install.ps1              # Windows one-liner installer
     ├── install.ps1                     # Windows installer
     ├── uninstall.ps1                   # Windows uninstaller
     ├── copy_mac_path.ps1               # PC → Mac conversion (context menu)

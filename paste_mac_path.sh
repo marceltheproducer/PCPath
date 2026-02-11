@@ -64,7 +64,7 @@ convert_to_mac() {
 
 # Read input from arguments, stdin, or clipboard
 if [[ $# -gt 0 ]]; then
-    input="$*"
+    input="$(printf '%s\n' "$@")"
 elif [[ ! -t 0 ]]; then
     input=$(cat)
 else
@@ -74,6 +74,9 @@ fi
 # Convert each line
 output=""
 while IFS= read -r line; do
+    # Trim leading/trailing whitespace
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
     [[ -z "$line" ]] && continue
     converted="$(convert_to_mac "$line")"
     if [[ -n "$output" ]]; then

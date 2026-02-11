@@ -26,9 +26,12 @@ pcpath_load_mappings() {
         # Split on first =
         local vol="${line%%=*}"
         local letter="${line#*=}"
-        # Trim whitespace and uppercase drive letter
-        vol="$(echo "$vol" | tr -d ' ')"
-        letter="$(echo "$letter" | tr -d ' ' | tr '[:lower:]' '[:upper:]')"
+        # Trim leading/trailing whitespace (preserves internal spaces in volume names)
+        vol="${vol#"${vol%%[![:space:]]*}"}"
+        vol="${vol%"${vol##*[![:space:]]}"}"
+        letter="${letter#"${letter%%[![:space:]]*}"}"
+        letter="${letter%"${letter##*[![:space:]]}"}"
+        letter="$(echo "$letter" | tr '[:lower:]' '[:upper:]')"
         [[ -z "$vol" || -z "$letter" ]] && continue
         vol_names+=("$vol")
         drive_letters+=("$letter")

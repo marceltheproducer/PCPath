@@ -201,9 +201,190 @@
     font-size: 0.75rem;
     margin-top: 0.5rem;
   }
+
+  /* Theme picker */
+  .theme-picker {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+  }
+
+  .theme-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: inherit;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s;
+    backdrop-filter: blur(8px);
+  }
+
+  .theme-btn:hover { background: rgba(255,255,255,0.14); }
+
+  .theme-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    flex-shrink: 0;
+  }
+
+  .theme-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0.4rem;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+
+  .theme-dropdown.open { display: block; }
+
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #ccc;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.1s;
+  }
+
+  .theme-option:hover { background: rgba(255,255,255,0.08); }
+
+  .theme-option .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+
+  .theme-hex-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.5rem;
+    border-top: 1px solid #333;
+    margin-top: 0.25rem;
+    padding-top: 0.5rem;
+  }
+
+  .theme-hex-row label {
+    font-size: 0.75rem;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  .theme-hex-input {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.4rem;
+    width: 100%;
+  }
+
+  .theme-hex-input:focus { outline: none; border-color: #555; }
+
+  .theme-hex-apply {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #aaa;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .theme-hex-apply:hover { background: #333; color: #fff; }
+
+  /* Light theme adjustments */
+  body.light-theme { color: #222; }
+  body.light-theme h1 { color: #111; }
+  body.light-theme .subtitle { color: #777; }
+  body.light-theme .path-box label { color: #777; }
+  body.light-theme .path-box textarea { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #222; }
+  body.light-theme .path-box textarea:focus { border-color: rgba(0,0,0,0.3); }
+  body.light-theme .path-box textarea::placeholder { color: #aaa; }
+  body.light-theme .copy-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
+  body.light-theme .copy-btn:hover { background: rgba(0,0,0,0.1); color: #333; }
+  body.light-theme .arrow { color: #bbb; }
+  body.light-theme .mappings-toggle { color: #999; }
+  body.light-theme .mappings-toggle:hover { color: #555; }
+  body.light-theme .mappings-panel { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
+  body.light-theme .mappings-panel input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #222; }
+  body.light-theme .mappings-panel .eq { color: #bbb; }
+  body.light-theme .mapping-remove { color: #bbb; }
+  body.light-theme .mapping-actions button { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
+  body.light-theme .mapping-actions button:hover { background: rgba(0,0,0,0.1); color: #333; }
+  body.light-theme .hint { color: #aaa; }
+  body.light-theme .theme-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
+  body.light-theme .theme-btn:hover { background: rgba(0,0,0,0.1); }
+  body.light-theme .theme-swatch { border-color: rgba(0,0,0,0.2); }
+  body.light-theme .theme-dropdown { background: #f5f5f5; border-color: rgba(0,0,0,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  body.light-theme .theme-option { color: #444; }
+  body.light-theme .theme-option:hover { background: rgba(0,0,0,0.06); }
+  body.light-theme .theme-option .swatch { border-color: rgba(0,0,0,0.2); }
+  body.light-theme .theme-hex-row { border-color: rgba(0,0,0,0.1); }
+  body.light-theme .theme-hex-row label { color: #888; }
+  body.light-theme .theme-hex-input { background: #fff; border-color: rgba(0,0,0,0.15); color: #222; }
+  body.light-theme .theme-hex-apply { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); color: #666; }
+  body.light-theme .theme-hex-apply:hover { background: rgba(0,0,0,0.1); color: #333; }
 </style>
 </head>
 <body>
+
+<!-- Theme Picker -->
+<div class="theme-picker">
+  <button class="theme-btn" id="theme-toggle">
+    <span class="theme-swatch" id="theme-swatch"></span>
+    <span id="theme-label">Theme</span>
+  </button>
+  <div class="theme-dropdown" id="theme-dropdown">
+    <button class="theme-option" data-color="#0f0f0f" data-light="false">
+      <span class="swatch" style="background:#0f0f0f"></span> Dark (Default)
+    </button>
+    <button class="theme-option" data-color="#000000" data-light="false">
+      <span class="swatch" style="background:#000000"></span> Black
+    </button>
+    <button class="theme-option" data-color="#ffffff" data-light="true">
+      <span class="swatch" style="background:#ffffff"></span> White
+    </button>
+    <button class="theme-option" data-color="#ffc0cb" data-light="true">
+      <span class="swatch" style="background:#ffc0cb"></span> Pink
+    </button>
+    <button class="theme-option" data-color="#a8e6cf" data-light="true">
+      <span class="swatch" style="background:#a8e6cf"></span> Mint Green
+    </button>
+    <div class="theme-hex-row">
+      <label>#</label>
+      <input class="theme-hex-input" id="hex-input" placeholder="hex code" maxlength="6" spellcheck="false">
+      <button class="theme-hex-apply" id="hex-apply">Apply</button>
+    </div>
+  </div>
+</div>
 
 <h1>PCPath</h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
@@ -488,6 +669,92 @@ document.getElementById("reset-mappings").addEventListener("click", () => {
 });
 
 renderMappings();
+
+// --- Theme Picker ---
+
+const THEME_KEY = "pcpath_theme";
+const themeToggle = document.getElementById("theme-toggle");
+const themeDropdown = document.getElementById("theme-dropdown");
+const themeSwatch = document.getElementById("theme-swatch");
+const themeLabel = document.getElementById("theme-label");
+const hexInput = document.getElementById("hex-input");
+const hexApply = document.getElementById("hex-apply");
+
+function isLightColor(hex) {
+  hex = hex.replace("#", "");
+  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  const r = parseInt(hex.substr(0,2), 16);
+  const g = parseInt(hex.substr(2,2), 16);
+  const b = parseInt(hex.substr(4,2), 16);
+  // Perceived brightness
+  return (r * 299 + g * 587 + b * 114) / 1000 > 140;
+}
+
+function applyTheme(color, light) {
+  document.body.style.background = color;
+  themeSwatch.style.background = color;
+
+  if (light) {
+    document.body.classList.add("light-theme");
+  } else {
+    document.body.classList.remove("light-theme");
+  }
+
+  localStorage.setItem(THEME_KEY, JSON.stringify({ color, light }));
+}
+
+function loadTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) {
+      const { color, light } = JSON.parse(saved);
+      applyTheme(color, light);
+      return;
+    }
+  } catch {}
+  // Default
+  themeSwatch.style.background = "#0f0f0f";
+}
+
+// Preset buttons
+themeDropdown.querySelectorAll(".theme-option").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const color = btn.dataset.color;
+    const light = btn.dataset.light === "true";
+    applyTheme(color, light);
+    themeDropdown.classList.remove("open");
+  });
+});
+
+// Custom hex
+function applyHex() {
+  let val = hexInput.value.trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
+    const color = "#" + val;
+    applyTheme(color, isLightColor(val));
+    themeDropdown.classList.remove("open");
+  }
+}
+
+hexApply.addEventListener("click", applyHex);
+hexInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") applyHex();
+});
+
+// Toggle dropdown
+themeToggle.addEventListener("click", (e) => {
+  e.stopPropagation();
+  themeDropdown.classList.toggle("open");
+});
+
+// Close on outside click
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".theme-picker")) {
+    themeDropdown.classList.remove("open");
+  }
+});
+
+loadTheme();
 </script>
 </body>
 </html>

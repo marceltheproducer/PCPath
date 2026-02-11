@@ -1,6 +1,9 @@
 # PCPath Uninstaller for Windows
 # Removes context menu entries and installed scripts.
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 $InstallDir = "$env:USERPROFILE\.pcpath"
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 
@@ -19,8 +22,8 @@ foreach ($path in $RegPaths) {
     }
 }
 
-# Remove installed scripts
-if (Test-Path $InstallDir) {
+# Remove installed scripts (validate path ends with \.pcpath before deleting)
+if ((Test-Path $InstallDir) -and ($InstallDir -match '\\\.pcpath$')) {
     Remove-Item -Path $InstallDir -Recurse -Force
 }
 

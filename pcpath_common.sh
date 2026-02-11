@@ -16,7 +16,7 @@ pcpath_load_mappings() {
     drive_letters=()
 
     local config_data="$PCPATH_DEFAULTS"
-    [[ -f "$PCPATH_CONFIG" ]] && config_data=$(cat "$PCPATH_CONFIG")
+    [[ -f "$PCPATH_CONFIG" && -r "$PCPATH_CONFIG" ]] && config_data=$(cat "$PCPATH_CONFIG")
 
     while IFS= read -r line; do
         # Strip carriage returns (Windows line endings)

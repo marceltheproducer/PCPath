@@ -28,6 +28,11 @@
 set -e
 
 VERSION="${1:-1.0.0}"
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "ERROR: Version must be in semver format (e.g., 1.2.3)" >&2
+    exit 1
+fi
+
 SIGN=false
 if [[ "$2" == "--sign" ]]; then
     SIGN=true
@@ -44,7 +49,7 @@ PKG_ID="com.pcpath.pkg"
 ENTITLEMENTS="$SCRIPT_DIR/entitlements.plist"
 
 # --- Validate signing prerequisites ---
-if $SIGN; then
+if [[ "$SIGN" == true ]]; then
     missing=""
     [[ -z "$DEVELOPER_ID_APP" ]] && missing="$missing DEVELOPER_ID_APP"
     [[ -z "$DEVELOPER_ID_INSTALLER" ]] && missing="$missing DEVELOPER_ID_INSTALLER"
@@ -96,7 +101,7 @@ chmod +x "$PAYLOAD_DIR/paste_mac_path.sh"
 chmod +x "$PAYLOAD_DIR/user_setup.sh"
 
 # --- Code-sign Automator workflows (hardened runtime + entitlements) ---
-if $SIGN; then
+if [[ "$SIGN" == true ]]; then
     echo "Signing Automator workflows..."
     codesign --force --options runtime --deep --timestamp \
         --sign "$DEVELOPER_ID_APP" \
@@ -116,7 +121,7 @@ cp "$SCRIPT_DIR/postinstall" "$SCRIPTS_DIR/postinstall"
 chmod +x "$SCRIPTS_DIR/postinstall"
 
 # --- Build the .pkg ---
-if $SIGN; then
+if [[ "$SIGN" == true ]]; then
     # Build unsigned first, then sign with productsign
     pkgbuild \
         --root "$BUILD_DIR/payload" \
@@ -166,7 +171,7 @@ rm -rf "$BUILD_DIR"
 
 echo ""
 echo "Package built: kandji/$PKG_NAME"
-if $SIGN; then
+if [[ "$SIGN" == true ]]; then
     echo "  Status: Signed, notarized, and stapled — ready for distribution."
 else
     echo "  Status: UNSIGNED — for local testing only. Use --sign for distribution."

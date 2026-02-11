@@ -13,10 +13,9 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Downloading PCPath..."
-curl -fsSL "$REPO_URL" | tar -xz -C "$TMPDIR_PATH"
+curl -fsSL "$REPO_URL" | tar -xz --strip-components=1 -C "$TMPDIR_PATH"
 
-# The archive extracts to PCPath-master/
-cd "$TMPDIR_PATH/PCPath-master"
+cd "$TMPDIR_PATH"
 
 echo ""
 bash ./install.sh

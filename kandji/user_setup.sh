@@ -2,6 +2,8 @@
 # PCPath per-user setup — runs at login via LaunchAgent
 # Copies workflows and scripts into the current user's home directory.
 
+set -e
+
 SYSTEM_DIR="/usr/local/pcpath"
 INSTALL_DIR="$HOME/.pcpath"
 SERVICES_DIR="$HOME/Library/Services"

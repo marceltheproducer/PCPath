@@ -10,7 +10,7 @@ param(
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 
 # Default mappings: drive letter -> volume name
-$DriveToVol = @{}
+$DriveToVol = [System.Collections.Hashtable]::new([System.StringComparer]::OrdinalIgnoreCase)
 $DefaultMappings = @"
 CONTENT=K
 GFX=G
@@ -38,6 +38,13 @@ $Source -split "`n" | ForEach-Object {
 if (-not $FilePath) {
     Write-Host "Usage: copy_mac_path.ps1 <file-path>"
     Write-Host "  Or right-click a file and select 'Copy as Mac Path'"
+    exit 1
+}
+
+# Validate drive-letter path (e.g. C:\..., K:\...)
+if ($FilePath -notmatch '^[A-Za-z]:') {
+    Write-Host "Not a drive-letter path: $FilePath"
+    Write-Host "UNC and relative paths are not supported."
     exit 1
 }
 

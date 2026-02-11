@@ -2,6 +2,8 @@
 # postinstall — runs as root after pkg installs files to /usr/local/pcpath
 # Sets permissions and installs the LaunchAgent for per-user setup.
 
+set -e
+
 SYSTEM_DIR="/usr/local/pcpath"
 LAUNCH_AGENT_SRC="$SYSTEM_DIR/com.pcpath.user-setup.plist"
 LAUNCH_AGENT_DST="/Library/LaunchAgents/com.pcpath.user-setup.plist"

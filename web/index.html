@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCPath — Path Converter</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #fff;
+  }
+
+  .subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .path-box {
+    position: relative;
+    margin-bottom: 1.25rem;
+  }
+
+  .path-box label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-bottom: 0.4rem;
+  }
+
+  .path-box textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.75rem;
+    padding-right: 3.5rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.15s;
+  }
+
+  .path-box textarea:focus {
+    outline: none;
+    border-color: #555;
+  }
+
+  .path-box textarea::placeholder { color: #555; }
+
+  .copy-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 12px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { background: #333; color: #fff; border-color: #666; }
+  .copy-btn.copied { color: #4ade80; border-color: #4ade80; }
+
+  .arrow {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 1.25rem;
+    user-select: none;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .badge.mac { background: #1d3557; color: #a8dadc; }
+  .badge.pc  { background: #3d1f00; color: #f4a261; }
+  .badge.unknown { background: #222; color: #666; }
+
+  /* Mappings editor */
+  .mappings-toggle {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    padding: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.15s;
+  }
+
+  .mappings-toggle:hover { color: #aaa; }
+  .mappings-toggle .chevron { transition: transform 0.2s; }
+  .mappings-toggle.open .chevron { transform: rotate(90deg); }
+
+  .mappings-panel {
+    display: none;
+    margin-top: 0.75rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .mappings-panel.open { display: block; }
+
+  .mappings-panel .mapping-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .mappings-panel input {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .mappings-panel input.vol-input { flex: 1; }
+  .mappings-panel input.letter-input { width: 3rem; text-align: center; text-transform: uppercase; }
+
+  .mappings-panel .eq { color: #555; font-family: monospace; }
+
+  .mapping-remove {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    line-height: 1;
+  }
+
+  .mapping-remove:hover { color: #e74c3c; }
+
+  .mapping-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .mapping-actions button {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #aaa;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .mapping-actions button:hover { background: #333; color: #fff; }
+
+  .hint {
+    color: #555;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>PCPath</h1>
+<p class="subtitle">Paste a path. Get the other format.</p>
+
+<div class="container">
+  <div class="path-box">
+    <label>Input <span id="input-badge" class="badge unknown">paste a path</span></label>
+    <textarea id="input" placeholder="K:\Projects\Assets\logo.psd&#10;/Volumes/CONTENT/Projects/Assets/logo.psd" spellcheck="false"></textarea>
+  </div>
+
+  <div class="arrow">&#8595;</div>
+
+  <div class="path-box">
+    <label>Output <span id="output-badge" class="badge unknown"></span></label>
+    <textarea id="output" readonly placeholder="Converted path appears here" spellcheck="false"></textarea>
+    <button class="copy-btn" id="copy-btn" title="Copy to clipboard">Copy</button>
+  </div>
+
+  <button class="mappings-toggle" id="mappings-toggle">
+    <span class="chevron">&#9654;</span> Drive mappings
+  </button>
+
+  <div class="mappings-panel" id="mappings-panel">
+    <div id="mappings-list"></div>
+    <div class="mapping-actions">
+      <button id="add-mapping">+ Add mapping</button>
+      <button id="reset-mappings">Reset to defaults</button>
+    </div>
+    <p class="hint">Mappings are saved in your browser's local storage.</p>
+  </div>
+</div>
+
+<script>
+const DEFAULT_MAPPINGS = [
+  { vol: "CONTENT", letter: "K" },
+  { vol: "GFX", letter: "G" },
+  { vol: "EDIT", letter: "E" },
+  { vol: "THE_NETWORK", letter: "N" },
+];
+
+const STORAGE_KEY = "pcpath_mappings";
+
+function loadMappings() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return DEFAULT_MAPPINGS.map(m => ({ ...m }));
+}
+
+function saveMappings(mappings) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(mappings));
+}
+
+let mappings = loadMappings();
+
+// --- Detection ---
+
+function detectType(path) {
+  const trimmed = path.trim();
+  if (!trimmed) return "unknown";
+  if (/^[A-Za-z]:[\\\/]/.test(trimmed) || /^[A-Za-z]:$/.test(trimmed)) return "pc";
+  if (trimmed.startsWith("/Volumes/")) return "mac";
+  if (trimmed.includes("\\")) return "pc";
+  if (trimmed.startsWith("/")) return "mac";
+  return "unknown";
+}
+
+// --- Mac to PC ---
+
+function macToPC(macPath) {
+  let matched = false;
+  let pcPath = "";
+
+  for (const { vol, letter } of mappings) {
+    const prefix = "/Volumes/" + vol + "/";
+    if (macPath.toLowerCase().startsWith(prefix.toLowerCase())) {
+      const remainder = macPath.slice(prefix.length);
+      pcPath = letter.toUpperCase() + ":\\" + remainder;
+      matched = true;
+      break;
+    }
+    const exact = "/Volumes/" + vol;
+    if (macPath.toLowerCase() === exact.toLowerCase()) {
+      pcPath = letter.toUpperCase() + ":\\";
+      matched = true;
+      break;
+    }
+  }
+
+  if (!matched) {
+    if (macPath.startsWith("/Volumes/")) {
+      const afterVolumes = macPath.slice("/Volumes/".length);
+      const slashIdx = afterVolumes.indexOf("/");
+      if (slashIdx === -1) {
+        pcPath = "?(" + afterVolumes + "):\\";
+      } else {
+        const volName = afterVolumes.slice(0, slashIdx);
+        const remainder = afterVolumes.slice(slashIdx + 1);
+        pcPath = "?(" + volName + "):\\" + remainder;
+      }
+    } else {
+      pcPath = macPath;
+    }
+  }
+
+  pcPath = pcPath.replace(/\//g, "\\");
+  return pcPath;
+}
+
+// --- PC to Mac ---
+
+function pcToMac(pcPath) {
+  // Normalize backslashes to forward slashes
+  let normalized = pcPath.replace(/\\/g, "/");
+
+  const match = normalized.match(/^([A-Za-z]):(.*)/);
+  if (!match) return normalized;
+
+  const drive = match[1].toUpperCase();
+  let remainder = match[2];
+  if (remainder.startsWith("/")) remainder = remainder.slice(1);
+
+  for (const { vol, letter } of mappings) {
+    if (letter.toUpperCase() === drive) {
+      return remainder ? "/Volumes/" + vol + "/" + remainder : "/Volumes/" + vol;
+    }
+  }
+
+  // Unknown drive letter
+  return remainder ? "/Volumes/?(" + drive + ")/" + remainder : "/Volumes/?(" + drive + ")";
+}
+
+// --- Convert ---
+
+function convert(input) {
+  const lines = input.split("\n");
+  const results = [];
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { results.push(""); continue; }
+
+    const type = detectType(line);
+    if (type === "pc") {
+      results.push(pcToMac(line));
+    } else if (type === "mac") {
+      results.push(macToPC(line));
+    } else {
+      results.push(line);
+    }
+  }
+
+  return results.join("\n");
+}
+
+// --- UI ---
+
+const inputEl = document.getElementById("input");
+const outputEl = document.getElementById("output");
+const inputBadge = document.getElementById("input-badge");
+const outputBadge = document.getElementById("output-badge");
+const copyBtn = document.getElementById("copy-btn");
+const toggleBtn = document.getElementById("mappings-toggle");
+const panel = document.getElementById("mappings-panel");
+const listEl = document.getElementById("mappings-list");
+
+function updateBadges(type) {
+  inputBadge.className = "badge";
+  outputBadge.className = "badge";
+  inputBadge.textContent = "";
+  outputBadge.textContent = "";
+
+  if (type === "pc") {
+    inputBadge.classList.add("pc");
+    inputBadge.textContent = "PC";
+    outputBadge.classList.add("mac");
+    outputBadge.textContent = "Mac";
+  } else if (type === "mac") {
+    inputBadge.classList.add("mac");
+    inputBadge.textContent = "Mac";
+    outputBadge.classList.add("pc");
+    outputBadge.textContent = "PC";
+  } else {
+    inputBadge.classList.add("unknown");
+    inputBadge.textContent = "paste a path";
+  }
+}
+
+function onInput() {
+  const val = inputEl.value;
+  const firstLine = val.split("\n").find(l => l.trim()) || "";
+  const type = detectType(firstLine);
+  updateBadges(type);
+
+  if (!val.trim()) {
+    outputEl.value = "";
+    return;
+  }
+
+  outputEl.value = convert(val);
+}
+
+inputEl.addEventListener("input", onInput);
+
+// Copy
+copyBtn.addEventListener("click", () => {
+  const text = outputEl.value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    copyBtn.textContent = "Copied!";
+    copyBtn.classList.add("copied");
+    setTimeout(() => {
+      copyBtn.textContent = "Copy";
+      copyBtn.classList.remove("copied");
+    }, 1500);
+  });
+});
+
+// Mappings panel
+toggleBtn.addEventListener("click", () => {
+  toggleBtn.classList.toggle("open");
+  panel.classList.toggle("open");
+});
+
+function renderMappings() {
+  listEl.innerHTML = "";
+  mappings.forEach((m, i) => {
+    const row = document.createElement("div");
+    row.className = "mapping-row";
+    row.innerHTML = `
+      <input class="vol-input" value="${escapeHtml(m.vol)}" placeholder="VOLUME_NAME" data-i="${i}" data-field="vol">
+      <span class="eq">=</span>
+      <input class="letter-input" value="${escapeHtml(m.letter)}" maxlength="1" placeholder="X" data-i="${i}" data-field="letter">
+      <button class="mapping-remove" data-i="${i}" title="Remove">&times;</button>
+    `;
+    listEl.appendChild(row);
+  });
+
+  // Bind events
+  listEl.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", (e) => {
+      const idx = parseInt(e.target.dataset.i);
+      const field = e.target.dataset.field;
+      let val = e.target.value;
+      if (field === "letter") val = val.toUpperCase().replace(/[^A-Z]/g, "");
+      mappings[idx][field] = val;
+      saveMappings(mappings);
+      onInput(); // re-convert
+    });
+  });
+
+  listEl.querySelectorAll(".mapping-remove").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = parseInt(e.target.dataset.i);
+      mappings.splice(idx, 1);
+      saveMappings(mappings);
+      renderMappings();
+      onInput();
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+document.getElementById("add-mapping").addEventListener("click", () => {
+  mappings.push({ vol: "", letter: "" });
+  saveMappings(mappings);
+  renderMappings();
+  // Focus the new volume input
+  const inputs = listEl.querySelectorAll(".vol-input");
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
+document.getElementById("reset-mappings").addEventListener("click", () => {
+  mappings = DEFAULT_MAPPINGS.map(m => ({ ...m }));
+  saveMappings(mappings);
+  renderMappings();
+  onInput();
+});
+
+renderMappings();
+</script>
+</body>
+</html>

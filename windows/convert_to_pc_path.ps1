@@ -11,6 +11,9 @@ param(
     [string]$Path
 )
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 
 # Build vol name -> drive letter mapping
@@ -24,7 +27,7 @@ THE_NETWORK=N
 
 $Source = $DefaultMappings
 if (Test-Path $ConfigFile) {
-    $Source = Get-Content $ConfigFile -Raw
+    $Source = Get-Content $ConfigFile -Raw -Encoding UTF8
 }
 
 $Source -split "`n" | ForEach-Object {
@@ -34,7 +37,10 @@ $Source -split "`n" | ForEach-Object {
         if ($parts.Count -eq 2) {
             $volName = $parts[0].Trim()
             $driveLetter = $parts[1].Trim().ToUpper()
-            $VolToDrive[$volName] = $driveLetter
+            # Validate drive letter is a single character A-Z
+            if ($driveLetter -match '^[A-Z]$') {
+                $VolToDrive[$volName] = $driveLetter
+            }
         }
     }
 }
@@ -49,7 +55,7 @@ if (-not $Path) {
 }
 
 # Convert each line separately (handles multiline clipboard)
-$Results = @()
+$ResultList = [System.Collections.Generic.List[string]]::new()
 $Path -split "`n" | ForEach-Object {
     $Line = $_.Trim()
     if (-not $Line) { return }
@@ -61,17 +67,17 @@ $Path -split "`n" | ForEach-Object {
 
         if ($VolToDrive.ContainsKey($VolName)) {
             $Drive = $VolToDrive[$VolName]
-            $Results += "${Drive}:\$Rest"
+            $ResultList.Add("${Drive}:\$Rest")
         } else {
             # Unknown volume — include name so user knows which to map
-            $Results += "?($VolName):\$Rest"
+            $ResultList.Add("?($VolName):\$Rest")
         }
     } else {
         # Not a /Volumes/ path, just swap slashes
-        $Results += $Line -replace "/", "\"
+        $ResultList.Add(($Line -replace "/", "\"))
     }
 }
 
-$Output = $Results -join "`n"
+$Output = $ResultList -join "`n"
 $Output | Set-Clipboard
 Write-Host "Copied: $Output"

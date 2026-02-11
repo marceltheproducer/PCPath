@@ -7,6 +7,9 @@ param(
     [string]$FilePath
 )
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 
 # Default mappings: drive letter -> volume name
@@ -20,7 +23,7 @@ THE_NETWORK=N
 
 $Source = $DefaultMappings
 if (Test-Path $ConfigFile) {
-    $Source = Get-Content $ConfigFile -Raw
+    $Source = Get-Content $ConfigFile -Raw -Encoding UTF8
 }
 
 $Source -split "`n" | ForEach-Object {
@@ -30,7 +33,10 @@ $Source -split "`n" | ForEach-Object {
         if ($parts.Count -eq 2) {
             $volName = $parts[0].Trim()
             $driveLetter = $parts[1].Trim().ToUpper()
-            $DriveToVol[$driveLetter] = $volName
+            # Validate drive letter is a single character A-Z
+            if ($driveLetter -match '^[A-Z]$') {
+                $DriveToVol[$driveLetter] = $volName
+            }
         }
     }
 }

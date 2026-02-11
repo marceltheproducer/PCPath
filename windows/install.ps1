@@ -1,6 +1,9 @@
 # PCPath Installer for Windows
 # Adds "Copy as Mac Path" to the right-click context menu.
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $InstallDir = "$env:USERPROFILE\.pcpath"
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"

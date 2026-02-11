@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 
 $RepoUrl = "https://github.com/marceltheproducer/PCPath/archive/refs/heads/master.zip"
-$TmpDir = Join-Path $env:TEMP "pcpath_install_$(Get-Random)"
+$TmpDir = Join-Path $env:TEMP "pcpath_install_$([System.IO.Path]::GetRandomFileName())"
 $ZipFile = Join-Path $TmpDir "pcpath.zip"
 
 try {
@@ -16,8 +16,12 @@ try {
     Write-Host "Extracting..."
     Expand-Archive -Path $ZipFile -DestinationPath $TmpDir -Force
 
-    # The archive extracts to PCPath-master/
-    $ExtractedDir = Join-Path $TmpDir "PCPath-master\windows"
+    # Find the extracted directory (name depends on the default branch)
+    $ExtractedRoot = Get-ChildItem -Path $TmpDir -Directory | Where-Object { $_.Name -like "PCPath-*" } | Select-Object -First 1
+    if (-not $ExtractedRoot) {
+        throw "Could not find extracted PCPath directory in $TmpDir"
+    }
+    $ExtractedDir = Join-Path $ExtractedRoot.FullName "windows"
 
     Write-Host ""
     & "$ExtractedDir\install.ps1"

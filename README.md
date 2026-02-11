@@ -150,17 +150,47 @@ To set this up for your team without MDM:
 
 For pushing PCPath to multiple Macs via Kandji (or any MDM that supports `.pkg` files):
 
-**1. Build the installer package**
+**1. Prerequisites**
 
-On any Mac with Xcode command-line tools installed:
+- A Mac with Xcode command-line tools installed
+- An [Apple Developer Program](https://developer.apple.com/programs/) membership ($99/year)
+- Two Developer ID certificates (created at [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/certificates/list)):
+  - **Developer ID Application** — signs the Automator workflows
+  - **Developer ID Installer** — signs the .pkg
+
+**2. One-time notarization setup**
+
+Store your Apple credentials in the keychain so the build script can notarize automatically:
+
+```bash
+xcrun notarytool store-credentials "PCPath" \
+  --apple-id "you@example.com" \
+  --team-id "ABCDE12345" \
+  --password "<app-specific-password>"
+```
+
+Generate an app-specific password at [appleid.apple.com](https://appleid.apple.com/account/manage) under **Sign-In and Security > App-Specific Passwords**.
+
+**3. Build the signed installer**
 
 ```bash
 git clone https://github.com/marceltheproducer/PCPath.git
 cd PCPath
-./kandji/build_pkg.sh 1.0.0
+
+export DEVELOPER_ID_APP="Developer ID Application: Your Name (TEAMID)"
+export DEVELOPER_ID_INSTALLER="Developer ID Installer: Your Name (TEAMID)"
+export NOTARY_PROFILE="PCPath"
+
+./kandji/build_pkg.sh 1.0.0 --sign
 ```
 
-This produces `kandji/PCPath-1.0.0.pkg`.
+This code-signs the Automator workflows (hardened runtime), signs the .pkg with your Developer ID Installer certificate, submits to Apple for notarization, and staples the ticket. The output is `kandji/PCPath-1.0.0.pkg`, ready for distribution.
+
+For local testing without signing, omit `--sign`:
+
+```bash
+./kandji/build_pkg.sh 1.0.0
+```
 
 **2. Upload to Kandji**
 
@@ -212,6 +242,7 @@ PCPath/
 ├── Convert to Mac Path.workflow/       # Text Services Quick Action
 ├── kandji/
 │   ├── build_pkg.sh                    # Builds .pkg for Kandji/MDM deployment
+│   ├── entitlements.plist              # Hardened runtime entitlements for workflows
 │   ├── postinstall                     # pkg postinstall script (runs as root)
 │   ├── user_setup.sh                   # Per-user setup (runs at login)
 │   ├── com.pcpath.user-setup.plist     # LaunchAgent for login-time setup

@@ -8,7 +8,16 @@ SYSTEM_DIR="/usr/local/pcpath"
 LAUNCH_AGENT_SRC="$SYSTEM_DIR/com.pcpath.user-setup.plist"
 LAUNCH_AGENT_DST="/Library/LaunchAgents/com.pcpath.user-setup.plist"
 
-# Make scripts executable
+# Lock down ownership and permissions before doing anything else.
+# /usr/local/ can be admin-writable (e.g. Homebrew), so we must ensure
+# no local user can tamper with scripts the LaunchAgent will execute.
+chown -R root:wheel "$SYSTEM_DIR"
+chmod -R 755 "$SYSTEM_DIR"
+chmod 644 "$SYSTEM_DIR/pcpath_mappings.default"
+chmod 644 "$SYSTEM_DIR/com.pcpath.user-setup.plist"
+chmod 644 "$SYSTEM_DIR/.version"
+
+# Make scripts executable (after ownership is locked)
 chmod +x "$SYSTEM_DIR/pcpath_common.sh"
 chmod +x "$SYSTEM_DIR/copy_pc_path.sh"
 chmod +x "$SYSTEM_DIR/paste_mac_path.sh"
@@ -19,11 +28,15 @@ cp "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST"
 chmod 644 "$LAUNCH_AGENT_DST"
 chown root:wheel "$LAUNCH_AGENT_DST"
 
-# Run user_setup now for any currently logged-in user
+# Run user_setup now for any currently logged-in console user.
+# Note: Fast User Switching means only the frontmost user is detected here;
+# other logged-in users will get setup at their next login via the LaunchAgent.
+# If user_setup fails, don't abort — the LaunchAgent will retry at next login.
 CONSOLE_USER=$(stat -f "%Su" /dev/console 2>/dev/null)
 if [[ -n "$CONSOLE_USER" && "$CONSOLE_USER" != "root" ]]; then
     CONSOLE_UID=$(id -u "$CONSOLE_USER")
-    launchctl asuser "$CONSOLE_UID" sudo -u "$CONSOLE_USER" /bin/bash "$SYSTEM_DIR/user_setup.sh"
+    launchctl asuser "$CONSOLE_UID" sudo -u "$CONSOLE_USER" /bin/bash "$SYSTEM_DIR/user_setup.sh" || \
+        echo "Warning: user_setup for $CONSOLE_USER failed (will retry at next login)"
 fi
 
 exit 0

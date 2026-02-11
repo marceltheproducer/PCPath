@@ -47,11 +47,11 @@ convert_to_mac() {
         done
 
         if [[ "$matched" == false ]]; then
-            # Unknown drive letter — use ? as placeholder volume name
+            # Unknown drive letter — include letter so user knows which to map
             if [[ -n "$remainder" ]]; then
-                mac_path="/Volumes/?/${remainder}"
+                mac_path="/Volumes/?(${drive})/${remainder}"
             else
-                mac_path="/Volumes/?"
+                mac_path="/Volumes/?(${drive})"
             fi
         fi
     else

@@ -15,20 +15,22 @@ pcpath_load_mappings() {
     vol_names=()
     drive_letters=()
 
-    local source="$PCPATH_DEFAULTS"
-    [[ -f "$PCPATH_CONFIG" ]] && source=$(cat "$PCPATH_CONFIG")
+    local config_data="$PCPATH_DEFAULTS"
+    [[ -f "$PCPATH_CONFIG" ]] && config_data=$(cat "$PCPATH_CONFIG")
 
     while IFS= read -r line; do
+        # Strip carriage returns (Windows line endings)
+        line="${line//$'\r'/}"
         # Skip comments and empty lines
         [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
         # Split on first =
         local vol="${line%%=*}"
         local letter="${line#*=}"
-        # Trim whitespace
+        # Trim whitespace and uppercase drive letter
         vol="$(echo "$vol" | tr -d ' ')"
-        letter="$(echo "$letter" | tr -d ' ')"
+        letter="$(echo "$letter" | tr -d ' ' | tr '[:lower:]' '[:upper:]')"
         [[ -z "$vol" || -z "$letter" ]] && continue
         vol_names+=("$vol")
         drive_letters+=("$letter")
-    done <<< "$source"
+    done <<< "$config_data"
 }

@@ -59,11 +59,11 @@ if ($DriveToVol.ContainsKey($DriveLetter)) {
         $MacPath = "/Volumes/$VolumeName"
     }
 } else {
-    # Unknown drive letter — use ? as placeholder
+    # Unknown drive letter — include letter so user knows which to map
     if ($Remainder) {
-        $MacPath = "/Volumes/?/$Remainder"
+        $MacPath = "/Volumes/?($DriveLetter)/$Remainder"
     } else {
-        $MacPath = "/Volumes/?"
+        $MacPath = "/Volumes/?($DriveLetter)"
     }
 }
 

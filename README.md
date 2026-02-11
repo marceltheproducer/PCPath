@@ -11,7 +11,7 @@ Cross-platform tool for converting file paths between Mac and Windows. Mac users
 | `/Volumes/GFX/Assets/logo.png` | `G:\Assets\logo.png` |
 | `/Volumes/EDIT/Sessions/project.prproj` | `E:\Sessions\project.prproj` |
 | `/Volumes/THE_NETWORK/Shared/doc.pdf` | `N:\Shared\doc.pdf` |
-| `/Volumes/UNKNOWN/file.txt` | `?:\file.txt` (placeholder — fill in the drive letter) |
+| `/Volumes/UNKNOWN/file.txt` | `?(UNKNOWN):\file.txt` (placeholder — fill in the drive letter) |
 
 ## Default Drive Mappings
 
@@ -29,7 +29,7 @@ These are the defaults. You can customize them — see [Configuration](#configur
 ## macOS Installation
 
 ```bash
-git clone <this-repo>
+git clone https://github.com/marceltheproducer/PCPath.git
 cd PCPath
 ./install.sh
 ```
@@ -54,7 +54,7 @@ This installs two Quick Actions and sets up the config file:
 Open PowerShell and run:
 
 ```powershell
-git clone <this-repo>
+git clone https://github.com/marceltheproducer/PCPath.git
 cd PCPath\windows
 .\install.ps1
 ```
@@ -139,7 +139,7 @@ To set this up for your team:
 - **macOS**: Automator Quick Actions call shell scripts installed at `~/.pcpath/`
 - **Windows**: PowerShell scripts installed at `%USERPROFILE%\.pcpath\`, triggered via context menu registry entries
 - **Config**: Both platforms read the same `pcpath_mappings` format so mappings stay in sync
-- **Unmapped volumes**: If a volume/drive isn't in the config, the path uses `?` as a placeholder (e.g. `?:\folder\file.txt`) so it's obvious you need to fill in the letter
+- **Unmapped volumes**: If a volume/drive isn't in the config, the path uses `?` as a placeholder with the volume/drive name included (e.g. `?(UNKNOWN):\folder\file.txt`) so it's obvious what needs mapping
 
 ## File Structure
 

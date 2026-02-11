@@ -43,13 +43,14 @@ convert_path() {
 
     if [[ "$matched" == false ]]; then
         if [[ "$mac_path" == /Volumes/* ]]; then
-            # Unmapped volume — use ? as a placeholder drive letter
+            # Unmapped volume — use ?(VOL_NAME) as a placeholder drive letter
             local after_volumes="${mac_path#/Volumes/}"
+            local vol_name="${after_volumes%%/*}"
             if [[ "$after_volumes" == */* ]]; then
                 local remainder="${after_volumes#*/}"
-                pc_path="?:\\${remainder}"
+                pc_path="?(${vol_name}):\\${remainder}"
             else
-                pc_path="?:\\"
+                pc_path="?(${vol_name}):\\"
             fi
         else
             pc_path="$mac_path"

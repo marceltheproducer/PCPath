@@ -59,8 +59,8 @@ if ($Path -match "^/Volumes/([^/]+)(/(.*))?$") {
         $Drive = $VolToDrive[$VolName]
         $PcPath = "${Drive}:\$Rest"
     } else {
-        # Unknown volume — use ? as placeholder
-        $PcPath = "?:\$Rest"
+        # Unknown volume — include name so user knows which to map
+        $PcPath = "?($VolName):\$Rest"
     }
 } else {
     # Not a /Volumes/ path, just swap slashes

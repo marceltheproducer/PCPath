@@ -22,13 +22,15 @@ convert_path() {
     local pc_path=""
     local matched=false
 
+    shopt -s nocasematch
     for i in "${!vol_names[@]}"; do
         local vol="${vol_names[$i]}"
         local letter="${drive_letters[$i]}"
         local prefix="/Volumes/${vol}/"
 
         if [[ "$mac_path" == "$prefix"* ]]; then
-            local remainder="${mac_path#$prefix}"
+            # Use length-based slicing to preserve original case in remainder
+            local remainder="${mac_path:${#prefix}}"
             pc_path="${letter}:\\${remainder}"
             matched=true
             break
@@ -40,6 +42,7 @@ convert_path() {
             break
         fi
     done
+    shopt -u nocasematch
 
     if [[ "$matched" == false ]]; then
         if [[ "$mac_path" == /Volumes/* ]]; then

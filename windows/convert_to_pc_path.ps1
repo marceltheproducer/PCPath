@@ -48,24 +48,30 @@ if (-not $Path) {
     exit 1
 }
 
-$Path = $Path.Trim()
+# Convert each line separately (handles multiline clipboard)
+$Results = @()
+$Path -split "`n" | ForEach-Object {
+    $Line = $_.Trim()
+    if (-not $Line) { return }
 
-if ($Path -match "^/Volumes/([^/]+)(/(.*))?$") {
-    $VolName = $Matches[1]
-    $Rest = if ($Matches[3]) { $Matches[3] } else { "" }
-    $Rest = $Rest -replace "/", "\"
+    if ($Line -match "^/Volumes/([^/]+)(/(.*))?$") {
+        $VolName = $Matches[1]
+        $Rest = if ($Matches[3]) { $Matches[3] } else { "" }
+        $Rest = $Rest -replace "/", "\"
 
-    if ($VolToDrive.ContainsKey($VolName)) {
-        $Drive = $VolToDrive[$VolName]
-        $PcPath = "${Drive}:\$Rest"
+        if ($VolToDrive.ContainsKey($VolName)) {
+            $Drive = $VolToDrive[$VolName]
+            $Results += "${Drive}:\$Rest"
+        } else {
+            # Unknown volume — include name so user knows which to map
+            $Results += "?($VolName):\$Rest"
+        }
     } else {
-        # Unknown volume — include name so user knows which to map
-        $PcPath = "?($VolName):\$Rest"
+        # Not a /Volumes/ path, just swap slashes
+        $Results += $Line -replace "/", "\"
     }
-} else {
-    # Not a /Volumes/ path, just swap slashes
-    $PcPath = $Path -replace "/", "\"
 }
 
-$PcPath | Set-Clipboard
-Write-Host "Copied: $PcPath"
+$Output = $Results -join "`n"
+$Output | Set-Clipboard
+Write-Host "Copied: $Output"

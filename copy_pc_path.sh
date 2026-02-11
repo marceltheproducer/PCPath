@@ -47,10 +47,21 @@ convert_path() {
     # Replace forward slashes with backslashes
     pc_path="${pc_path//\//\\}"
 
-    echo "$pc_path"
+    printf '%s' "$pc_path"
 }
 
-# When called from Automator, file paths come in as arguments
+# When called from Automator, file paths come in as arguments.
+# Collect all converted paths (one per line) and copy them all to the clipboard.
+output=""
 for f in "$@"; do
-    convert_path "$f" | tr -d '\n' | pbcopy
+    converted="$(convert_path "$f")"
+    if [[ -n "$output" ]]; then
+        output="${output}"$'\n'"${converted}"
+    else
+        output="${converted}"
+    fi
 done
+
+if [[ -n "$output" ]]; then
+    printf '%s' "$output" | pbcopy
+fi

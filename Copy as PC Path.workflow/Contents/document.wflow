@@ -102,12 +102,22 @@ convert_path() {
 
     pc_path="${pc_path//\//\\}"
 
-    echo "$pc_path"
+    printf '%s' "$pc_path"
 }
 
+output=""
 for f in "$@"; do
-    convert_path "$f" | tr -d '\n' | pbcopy
-done</string>
+    converted="$(convert_path "$f")"
+    if [[ -n "$output" ]]; then
+        output="${output}"$'\n'"${converted}"
+    else
+        output="${converted}"
+    fi
+done
+
+if [[ -n "$output" ]]; then
+    printf '%s' "$output" | pbcopy
+fi</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>

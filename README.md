@@ -38,6 +38,18 @@ When you right-click a file or folder on a mounted server volume, it converts th
    ```
 2. The Quick Action will appear in Finder's right-click menu under **Quick Actions**
 
+### Build It Yourself in Automator
+
+If the `.workflow` file doesn't install cleanly on your macOS version:
+
+1. Open **Automator** (`/Applications/Automator.app`)
+2. Choose **Quick Action** as the document type
+3. Set **"Workflow receives current"** to **files or folders** in **Finder**
+4. Drag a **Run Shell Script** action into the workflow
+5. Set **Shell** to `/bin/bash` and **Pass input** to `as arguments`
+6. Paste the contents of `copy_pc_path.sh` from this repo into the script box
+7. Save as **"Copy as PC Path"**
+
 ## Usage
 
 1. In Finder, right-click (or Control-click) any file or folder on a mounted volume

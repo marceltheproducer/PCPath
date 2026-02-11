@@ -1,47 +1,63 @@
 #!/bin/bash
 # PCPath - Convert Mac file paths to Windows/PC paths
-# Used by the Automator Quick Action to copy a PC-compatible path to clipboard.
+# Copies the converted path(s) to the clipboard.
 #
-# Volume-to-drive-letter mappings:
-#   /Volumes/CONTENT/     -> K:\
-#   /Volumes/GFX/         -> G:\
-#   /Volumes/EDIT/        -> E:\
-#   /Volumes/THE_NETWORK/ -> N:\
+# Reads drive letter mappings from ~/.pcpath_mappings
+# Falls back to built-in defaults if no config file exists.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/pcpath_common.sh" ]]; then
+    source "$SCRIPT_DIR/pcpath_common.sh"
+elif [[ -f "$HOME/.pcpath/pcpath_common.sh" ]]; then
+    source "$HOME/.pcpath/pcpath_common.sh"
+else
+    echo "Error: pcpath_common.sh not found" >&2
+    exit 1
+fi
+
+pcpath_load_mappings
 
 convert_path() {
     local mac_path="$1"
-
-    # Volume name -> drive letter mappings
-    declare -a vol_names=("CONTENT" "GFX" "EDIT" "THE_NETWORK")
-    declare -a drive_letters=("K" "G" "E" "N")
-
-    local matched=false
     local pc_path=""
+    local matched=false
 
+    shopt -s nocasematch
     for i in "${!vol_names[@]}"; do
         local vol="${vol_names[$i]}"
         local letter="${drive_letters[$i]}"
         local prefix="/Volumes/${vol}/"
 
         if [[ "$mac_path" == "$prefix"* ]]; then
-            # Strip the /Volumes/<name>/ prefix and prepend the drive letter
-            local remainder="${mac_path#$prefix}"
+            # Use length-based slicing to preserve original case in remainder
+            local remainder="${mac_path:${#prefix}}"
             pc_path="${letter}:\\${remainder}"
             matched=true
             break
         fi
 
-        # Also handle the case where the path IS the volume root (no trailing content)
         if [[ "$mac_path" == "/Volumes/${vol}" ]]; then
             pc_path="${letter}:\\"
             matched=true
             break
         fi
     done
+    shopt -u nocasematch
 
     if [[ "$matched" == false ]]; then
-        # If no volume matched, still convert slashes but keep the path as-is
-        pc_path="$mac_path"
+        if [[ "$mac_path" == /Volumes/* ]]; then
+            # Unmapped volume — use ?(VOL_NAME) as a placeholder drive letter
+            local after_volumes="${mac_path#/Volumes/}"
+            local vol_name="${after_volumes%%/*}"
+            if [[ "$after_volumes" == */* ]]; then
+                local remainder="${after_volumes#*/}"
+                pc_path="?(${vol_name}):\\${remainder}"
+            else
+                pc_path="?(${vol_name}):\\"
+            fi
+        else
+            pc_path="$mac_path"
+        fi
     fi
 
     # Replace forward slashes with backslashes
@@ -50,8 +66,7 @@ convert_path() {
     printf '%s' "$pc_path"
 }
 
-# When called from Automator, file paths come in as arguments.
-# Collect all converted paths (one per line) and copy them all to the clipboard.
+# Collect all converted paths and copy to clipboard
 output=""
 for f in "$@"; do
     converted="$(convert_path "$f")"

@@ -9,6 +9,16 @@
 
   body {
     --font-color: #e0e0e0;
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #111;
+    --bg-tertiary: #2a2a2a;
+    --border-color: #333;
+    --border-hover: #555;
+    --border-dark: #444;
+    --text-muted: #aaa;
+    --text-dim: #555;
+    --transition-fast: 0.15s;
+    --mono-font: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #0f0f0f;
     color: var(--font-color);
@@ -64,41 +74,40 @@
   .path-box textarea {
     width: 100%;
     min-height: 80px;
-    padding: 0.75rem;
-    padding-right: 3.5rem;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    padding: 0.75rem 3.5rem 0.75rem 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--font-color);
-    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-family: var(--mono-font);
     font-size: 0.9rem;
     line-height: 1.5;
     resize: vertical;
-    transition: border-color 0.15s;
+    transition: border-color var(--transition-fast);
   }
 
   .path-box textarea:focus {
     outline: none;
-    border-color: #555;
+    border-color: var(--border-hover);
   }
 
-  .path-box textarea::placeholder { color: #555; }
+  .path-box textarea::placeholder { color: var(--text-dim); }
 
   .copy-btn {
     position: absolute;
     right: 8px;
     bottom: 12px;
-    background: #2a2a2a;
-    border: 1px solid #444;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dark);
     border-radius: 6px;
-    color: #aaa;
+    color: var(--text-muted);
     font-size: 0.75rem;
     padding: 0.3rem 0.6rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all var(--transition-fast);
   }
 
-  .copy-btn:hover { background: #333; color: #fff; border-color: #666; }
+  .copy-btn:hover { background: var(--border-color); color: #fff; border-color: #666; }
   .copy-btn.copied { color: #4ade80; border-color: #4ade80; }
 
   .arrow {
@@ -147,8 +156,8 @@
   .mappings-panel {
     display: none;
     margin-top: 0.75rem;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;
   }
@@ -163,11 +172,11 @@
   }
 
   .mappings-panel input {
-    background: #111;
-    border: 1px solid #333;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     color: var(--font-color);
-    font-family: "SF Mono", Consolas, monospace;
+    font-family: var(--mono-font);
     font-size: 0.85rem;
     padding: 0.35rem 0.5rem;
   }
@@ -175,16 +184,17 @@
   .mappings-panel input.vol-input { flex: 1; }
   .mappings-panel input.letter-input { width: 3rem; text-align: center; text-transform: uppercase; }
 
-  .mappings-panel .eq { color: #555; font-family: monospace; }
+  .mappings-panel .eq { color: var(--text-dim); font-family: monospace; }
 
   .mapping-remove {
     background: none;
     border: none;
-    color: #555;
+    color: var(--text-dim);
     font-size: 1rem;
     cursor: pointer;
     padding: 0 0.25rem;
     line-height: 1;
+    transition: color var(--transition-fast);
   }
 
   .mapping-remove:hover { color: #e74c3c; }
@@ -196,20 +206,20 @@
   }
 
   .mapping-actions button {
-    background: #2a2a2a;
-    border: 1px solid #444;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dark);
     border-radius: 6px;
-    color: #aaa;
+    color: var(--text-muted);
     font-size: 0.75rem;
     padding: 0.35rem 0.7rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all var(--transition-fast);
   }
 
-  .mapping-actions button:hover { background: #333; color: #fff; }
+  .mapping-actions button:hover { background: var(--border-color); color: #fff; }
 
   .hint {
-    color: #555;
+    color: var(--text-dim);
     font-size: 0.75rem;
     margin-top: 0.5rem;
   }
@@ -233,8 +243,9 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    transition: all 0.15s;
+    transition: all var(--transition-fast);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .theme-btn:hover { background: rgba(255,255,255,0.14); }
@@ -252,8 +263,8 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.4rem;
     min-width: 180px;
@@ -275,7 +286,7 @@
     background: none;
     width: 100%;
     text-align: left;
-    transition: background 0.1s;
+    transition: background var(--transition-fast);
   }
 
   .theme-option:hover { background: rgba(255,255,255,0.08); }
@@ -293,7 +304,7 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.4rem 0.5rem;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--border-color);
     margin-top: 0.25rem;
     padding-top: 0.5rem;
   }
@@ -302,56 +313,63 @@
     font-size: 0.75rem;
     color: #888;
     white-space: nowrap;
+    min-width: 38px;
   }
 
   .theme-hex-input {
     flex: 1;
-    background: #111;
-    border: 1px solid #333;
+    min-width: 50px;
+    max-width: 90px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    color: #e0e0e0;
-    font-family: "SF Mono", Consolas, monospace;
+    color: var(--font-color);
+    font-family: var(--mono-font);
     font-size: 0.8rem;
     padding: 0.3rem 0.4rem;
-    width: 100%;
+    transition: border-color var(--transition-fast);
   }
 
-  .theme-hex-input:focus { outline: none; border-color: #555; }
+  .theme-hex-input:focus { outline: none; border-color: var(--border-hover); }
+  .theme-hex-input.invalid { border-color: #e74c3c; animation: shake 0.3s; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
 
   .theme-hex-apply {
-    background: #2a2a2a;
-    border: 1px solid #444;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-dark);
     border-radius: 4px;
-    color: #aaa;
+    color: var(--text-muted);
     font-size: 0.7rem;
     padding: 0.3rem 0.5rem;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.15s;
+    transition: all var(--transition-fast);
   }
 
-  .theme-hex-apply:hover { background: #333; color: #fff; }
+  .theme-hex-apply:hover { background: var(--border-color); color: #fff; }
 
-  /* Light theme adjustments (UI chrome only — font colors handled by --font-color) */
-  body.light-theme .path-box textarea { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); }
-  body.light-theme .path-box textarea:focus { border-color: rgba(0,0,0,0.3); }
-  body.light-theme .path-box textarea::placeholder { color: rgba(0,0,0,0.3); }
-  body.light-theme .copy-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
-  body.light-theme .copy-btn:hover { background: rgba(0,0,0,0.1); }
-  body.light-theme .mappings-panel { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
-  body.light-theme .mappings-panel input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
-  body.light-theme .mapping-actions button { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
-  body.light-theme .mapping-actions button:hover { background: rgba(0,0,0,0.1); }
-  body.light-theme .theme-btn { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
-  body.light-theme .theme-btn:hover { background: rgba(0,0,0,0.1); }
-  body.light-theme .theme-swatch { border-color: rgba(0,0,0,0.2); }
-  body.light-theme .theme-dropdown { background: #f5f5f5; border-color: rgba(0,0,0,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-  body.light-theme .theme-option { color: var(--font-color); }
+  /* Light theme adjustments */
+  body.light-theme {
+    --bg-primary: rgba(0,0,0,0.05);
+    --bg-secondary: #fff;
+    --bg-tertiary: rgba(0,0,0,0.06);
+    --border-color: rgba(0,0,0,0.15);
+    --border-hover: rgba(0,0,0,0.3);
+    --border-dark: rgba(0,0,0,0.15);
+    --text-muted: rgba(0,0,0,0.6);
+    --text-dim: rgba(0,0,0,0.3);
+  }
+
+  body.light-theme .theme-dropdown { background: #f5f5f5; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
   body.light-theme .theme-option:hover { background: rgba(0,0,0,0.06); }
+  body.light-theme .theme-swatch,
   body.light-theme .theme-option .swatch { border-color: rgba(0,0,0,0.2); }
   body.light-theme .theme-hex-row { border-color: rgba(0,0,0,0.1); }
-  body.light-theme .theme-hex-input { background: #fff; border-color: rgba(0,0,0,0.15); color: var(--font-color); }
-  body.light-theme .theme-hex-apply { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.15); }
 </style>
 </head>
 <body>
@@ -377,19 +395,19 @@
     </button>
     <div class="theme-hex-row">
       <label>BG #</label>
-      <input class="theme-hex-input" id="hex-input" placeholder="background" maxlength="6" spellcheck="false">
+      <input class="theme-hex-input" id="hex-input" placeholder="ffffff" maxlength="7" spellcheck="false">
       <button class="theme-hex-apply" id="hex-apply">Apply</button>
     </div>
     <div class="theme-hex-row">
       <label>Font #</label>
-      <input class="theme-hex-input" id="font-hex-input" placeholder="font color" maxlength="6" spellcheck="false">
+      <input class="theme-hex-input" id="font-hex-input" placeholder="000000" maxlength="7" spellcheck="false">
       <button class="theme-hex-apply" id="font-hex-apply">Apply</button>
       <button class="theme-hex-apply" id="font-hex-auto" title="Reset to auto-detected font color">Auto</button>
     </div>
   </div>
 </div>
 
-<h1>PCPath <span class="version">v1.1.0</span></h1>
+<h1>PCPath <span class="version">v1.1.1</span></h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
 
 <div class="container">
@@ -459,89 +477,65 @@ function detectType(path) {
 // --- Mac to PC ---
 
 function macToPC(macPath) {
-  let matched = false;
-  let pcPath = "";
+  const lowerPath = macPath.toLowerCase();
 
   for (const { vol, letter } of mappings) {
-    const prefix = "/Volumes/" + vol + "/";
-    if (macPath.toLowerCase().startsWith(prefix.toLowerCase())) {
+    const prefix = `/Volumes/${vol}/`.toLowerCase();
+    const exact = `/Volumes/${vol}`.toLowerCase();
+
+    if (lowerPath.startsWith(prefix)) {
       const remainder = macPath.slice(prefix.length);
-      pcPath = letter.toUpperCase() + ":\\" + remainder;
-      matched = true;
-      break;
+      return `${letter.toUpperCase()}:\\${remainder}`.replace(/\//g, "\\");
     }
-    const exact = "/Volumes/" + vol;
-    if (macPath.toLowerCase() === exact.toLowerCase()) {
-      pcPath = letter.toUpperCase() + ":\\";
-      matched = true;
-      break;
+    if (lowerPath === exact) {
+      return `${letter.toUpperCase()}:\\`;
     }
   }
 
-  if (!matched) {
-    if (macPath.startsWith("/Volumes/")) {
-      const afterVolumes = macPath.slice("/Volumes/".length);
-      const slashIdx = afterVolumes.indexOf("/");
-      if (slashIdx === -1) {
-        pcPath = "?(" + afterVolumes + "):\\";
-      } else {
-        const volName = afterVolumes.slice(0, slashIdx);
-        const remainder = afterVolumes.slice(slashIdx + 1);
-        pcPath = "?(" + volName + "):\\" + remainder;
-      }
-    } else {
-      pcPath = macPath;
-    }
+  // No mapping found
+  if (macPath.startsWith("/Volumes/")) {
+    const afterVolumes = macPath.slice(9); // "/Volumes/".length
+    const slashIdx = afterVolumes.indexOf("/");
+    const volName = slashIdx === -1 ? afterVolumes : afterVolumes.slice(0, slashIdx);
+    const remainder = slashIdx === -1 ? "" : afterVolumes.slice(slashIdx + 1);
+    return remainder ? `?(${volName}):\\${remainder}`.replace(/\//g, "\\") : `?(${volName}):\\`;
   }
 
-  pcPath = pcPath.replace(/\//g, "\\");
-  return pcPath;
+  return macPath.replace(/\//g, "\\");
 }
 
 // --- PC to Mac ---
 
 function pcToMac(pcPath) {
-  // Normalize backslashes to forward slashes
-  let normalized = pcPath.replace(/\\/g, "/");
-
+  const normalized = pcPath.replace(/\\/g, "/");
   const match = normalized.match(/^([A-Za-z]):(.*)/);
   if (!match) return normalized;
 
   const drive = match[1].toUpperCase();
-  let remainder = match[2];
-  if (remainder.startsWith("/")) remainder = remainder.slice(1);
+  const remainder = match[2].replace(/^\//, ""); // Remove leading slash if present
 
-  for (const { vol, letter } of mappings) {
-    if (letter.toUpperCase() === drive) {
-      return remainder ? "/Volumes/" + vol + "/" + remainder : "/Volumes/" + vol;
-    }
+  // Find matching volume
+  const mapping = mappings.find(({ letter }) => letter.toUpperCase() === drive);
+  if (mapping) {
+    return remainder ? `/Volumes/${mapping.vol}/${remainder}` : `/Volumes/${mapping.vol}`;
   }
 
   // Unknown drive letter
-  return remainder ? "/Volumes/?(" + drive + ")/" + remainder : "/Volumes/?(" + drive + ")";
+  return remainder ? `/Volumes/?(${drive})/${remainder}` : `/Volumes/?(${drive})`;
 }
 
 // --- Convert ---
 
 function convert(input) {
-  const lines = input.split("\n");
-  const results = [];
-
-  for (const raw of lines) {
+  return input.split("\n").map(raw => {
     const line = raw.trim();
-    if (!line) { results.push(""); continue; }
+    if (!line) return "";
 
     const type = detectType(line);
-    if (type === "pc") {
-      results.push(pcToMac(line));
-    } else if (type === "mac") {
-      results.push(macToPC(line));
-    } else {
-      results.push(line);
-    }
-  }
-
-  return results.join("\n");
+    return type === "pc" ? pcToMac(line) :
+           type === "mac" ? macToPC(line) :
+           line;
+  }).join("\n");
 }
 
 // --- UI ---
@@ -613,47 +607,46 @@ toggleBtn.addEventListener("click", () => {
   panel.classList.toggle("open");
 });
 
+// HTML escape utility
+const escapeHtml = (() => {
+  const map = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
+  return str => str.replace(/[&"<>]/g, m => map[m]);
+})();
+
 function renderMappings() {
-  listEl.innerHTML = "";
-  mappings.forEach((m, i) => {
-    const row = document.createElement("div");
-    row.className = "mapping-row";
-    row.innerHTML = `
+  listEl.innerHTML = mappings.map((m, i) => `
+    <div class="mapping-row">
       <input class="vol-input" value="${escapeHtml(m.vol)}" placeholder="VOLUME_NAME" data-i="${i}" data-field="vol">
       <span class="eq">=</span>
       <input class="letter-input" value="${escapeHtml(m.letter)}" maxlength="1" placeholder="X" data-i="${i}" data-field="letter">
       <button class="mapping-remove" data-i="${i}" title="Remove">&times;</button>
-    `;
-    listEl.appendChild(row);
-  });
-
-  // Bind events
-  listEl.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", (e) => {
-      const idx = parseInt(e.target.dataset.i);
-      const field = e.target.dataset.field;
-      let val = e.target.value;
-      if (field === "letter") val = val.toUpperCase().replace(/[^A-Z]/g, "");
-      mappings[idx][field] = val;
-      saveMappings(mappings);
-      onInput(); // re-convert
-    });
-  });
-
-  listEl.querySelectorAll(".mapping-remove").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      const idx = parseInt(e.target.dataset.i);
-      mappings.splice(idx, 1);
-      saveMappings(mappings);
-      renderMappings();
-      onInput();
-    });
-  });
+    </div>
+  `).join('');
 }
 
-function escapeHtml(s) {
-  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+// Use event delegation for mapping inputs and buttons
+listEl.addEventListener("input", (e) => {
+  if (!e.target.matches("input")) return;
+  const idx = parseInt(e.target.dataset.i);
+  const field = e.target.dataset.field;
+  let val = e.target.value;
+  if (field === "letter") {
+    val = val.toUpperCase().replace(/[^A-Z]/g, "");
+    e.target.value = val;
+  }
+  mappings[idx][field] = val;
+  saveMappings(mappings);
+  onInput();
+});
+
+listEl.addEventListener("click", (e) => {
+  if (!e.target.matches(".mapping-remove")) return;
+  const idx = parseInt(e.target.dataset.i);
+  mappings.splice(idx, 1);
+  saveMappings(mappings);
+  renderMappings();
+  onInput();
+});
 
 document.getElementById("add-mapping").addEventListener("click", () => {
   mappings.push({ vol: "", letter: "" });
@@ -692,10 +685,11 @@ let isCustomFont = false;
 
 function isLightColor(hex) {
   hex = hex.replace("#", "");
-  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-  const r = parseInt(hex.substr(0,2), 16);
-  const g = parseInt(hex.substr(2,2), 16);
-  const b = parseInt(hex.substr(4,2), 16);
+  if (hex.length === 3) hex = hex[0].repeat(2) + hex[1].repeat(2) + hex[2].repeat(2);
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  // Using relative luminance formula
   return (r * 299 + g * 587 + b * 114) / 1000 > 140;
 }
 
@@ -742,24 +736,37 @@ function loadTheme() {
   applyTheme("#0f0f0f", "#e0e0e0", false);
 }
 
-// Preset buttons
-themeDropdown.querySelectorAll(".theme-option").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const bg = btn.dataset.color;
-    const font = btn.dataset.font;
+// Preset buttons using event delegation
+themeDropdown.addEventListener("click", (e) => {
+  const option = e.target.closest(".theme-option");
+  if (option) {
+    const { color: bg, font } = option.dataset;
     applyTheme(bg, font, false);
     fontHexInput.value = "";
+    hexInput.value = "";
     themeDropdown.classList.remove("open");
-  });
+  }
 });
+
+// Helper to validate and normalize hex input
+function validateHex(input) {
+  let val = input.value.trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
+    input.classList.remove("invalid");
+    return "#" + val;
+  }
+  input.classList.add("invalid");
+  setTimeout(() => input.classList.remove("invalid"), 300);
+  return null;
+}
 
 // Custom BG hex
 function applyBgHex() {
-  let val = hexInput.value.trim().replace(/^#/, "");
-  if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
-    const bg = "#" + val;
-    const font = isCustomFont ? currentFont : autoFontColor(bg);
-    applyTheme(bg, font, isCustomFont);
+  const hex = validateHex(hexInput);
+  if (hex) {
+    const font = isCustomFont ? currentFont : autoFontColor(hex);
+    applyTheme(hex, font, isCustomFont);
+    hexInput.value = "";
     themeDropdown.classList.remove("open");
   }
 }
@@ -771,9 +778,11 @@ hexInput.addEventListener("keydown", (e) => {
 
 // Custom font hex
 function applyFontHex() {
-  let val = fontHexInput.value.trim().replace(/^#/, "");
-  if (/^[0-9a-fA-F]{3}$/.test(val) || /^[0-9a-fA-F]{6}$/.test(val)) {
-    applyTheme(currentBg, "#" + val, true);
+  const hex = validateHex(fontHexInput);
+  if (hex) {
+    applyTheme(currentBg, hex, true);
+    fontHexInput.value = "";
+    themeDropdown.classList.remove("open");
   }
 }
 

@@ -28,6 +28,14 @@ These are the defaults. You can customize them — see [Configuration](#configur
 
 ## macOS Installation
 
+**Quick install (no git required):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/master/remote_install.sh | bash
+```
+
+**Or clone and install manually:**
+
 ```bash
 git clone https://github.com/marceltheproducer/PCPath.git
 cd PCPath
@@ -51,7 +59,13 @@ This installs two Quick Actions and sets up the config file:
 
 ## Windows Installation
 
-Open PowerShell and run:
+**Quick install (no git required) — open PowerShell and run:**
+
+```powershell
+irm https://raw.githubusercontent.com/marceltheproducer/PCPath/master/windows/remote_install.ps1 | iex
+```
+
+**Or clone and install manually:**
 
 ```powershell
 git clone https://github.com/marceltheproducer/PCPath.git
@@ -145,6 +159,7 @@ To set this up for your team:
 
 ```
 PCPath/
+├── remote_install.sh                   # macOS one-liner installer
 ├── install.sh                          # macOS installer
 ├── uninstall.sh                        # macOS uninstaller
 ├── pcpath_common.sh                    # Shared config-loading logic
@@ -154,6 +169,7 @@ PCPath/
 ├── Copy as PC Path.workflow/           # Finder Quick Action
 ├── Convert to Mac Path.workflow/       # Text Services Quick Action
 └── windows/
+    ├── remote_install.ps1              # Windows one-liner installer
     ├── install.ps1                     # Windows installer
     ├── uninstall.ps1                   # Windows uninstaller
     ├── copy_mac_path.ps1               # PC → Mac conversion (context menu)

@@ -26,6 +26,31 @@ These are the defaults. You can customize them — see [Configuration](#configur
 
 ---
 
+## Web Version
+
+Don't want to install anything? Use the **web version** for quick path conversions in your browser:
+
+**[Open PCPath Web App](web/PCPath_v1.2.0.html)** (works offline, no installation needed)
+
+**Features:**
+- 🌐 Works in any modern browser
+- 💾 No installation required
+- 🎨 Dark/light themes + custom colors
+- ⚡ Auto-copy to clipboard (optional)
+- 📱 Responsive design (works on mobile)
+- 🔒 All data stays local (no server uploads)
+- ⚙️ Customizable drive mappings (saved in browser)
+
+**How to use:**
+1. Open the HTML file in your browser (or bookmark it)
+2. Paste a path (PC or Mac format)
+3. Get the converted path instantly
+4. Toggle "Auto-copy" for automatic clipboard copying
+
+**Tip:** You can save the HTML file to your desktop or bookmark it for quick access. All settings are saved in your browser's localStorage.
+
+---
+
 ## macOS Installation
 
 **Quick install (no git required):**
@@ -224,8 +249,108 @@ To standardize drive mappings, create a Kandji **Custom Script** that writes `~/
 
 - **macOS**: Automator Quick Actions call shell scripts installed at `~/.pcpath/`
 - **Windows**: PowerShell scripts installed at `%USERPROFILE%\.pcpath\`, triggered via context menu registry entries
+- **Web**: Standalone HTML file that runs entirely in your browser with localStorage for settings
 - **Config**: Both platforms read the same `pcpath_mappings` format so mappings stay in sync
 - **Unmapped volumes**: If a volume/drive isn't in the config, the path uses `?` as a placeholder with the volume/drive name included (e.g. `?(UNKNOWN):\folder\file.txt`) so it's obvious what needs mapping
+
+---
+
+## Troubleshooting
+
+### macOS Issues
+
+**Quick Actions don't appear in Finder**
+- Run `killall Finder` in Terminal to restart Finder
+- Check if workflows are installed: `ls ~/Library/Services/`
+- Try removing and reinstalling: `./uninstall.sh && ./install.sh`
+- Make sure you right-click on an actual file/folder (not empty space)
+
+**"Permission denied" when running scripts**
+- Check file permissions: `ls -l ~/.pcpath/`
+- Make scripts executable: `chmod +x ~/.pcpath/*.sh`
+
+**Paths not converting correctly**
+- Check your config file: `cat ~/.pcpath_mappings`
+- Make sure format is `VOLUME=LETTER` (one per line)
+- No spaces around the `=` sign
+- Volume names are case-sensitive
+- Check for Windows line endings (CRLF) - should be Unix (LF)
+
+**Getting `?(UNKNOWN):` in output**
+- The volume/drive isn't in your config file
+- Add the mapping to `~/.pcpath_mappings`
+- Example: `MYVOLUME=X`
+
+### Windows Issues
+
+**Context menu entries don't appear**
+- Restart Explorer: Open Task Manager → Restart "Windows Explorer"
+- Run PowerShell as Administrator and reinstall: `.\install.ps1`
+- Check registry entries exist: Look in `HKEY_CLASSES_ROOT\*\shell\`
+
+**"Execution policy" error when installing**
+- Run PowerShell as Administrator
+- Run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+- Try installing again
+
+**Converted path is wrong**
+- Check your config: `type %USERPROFILE%\.pcpath_mappings`
+- Make sure format is `VOLUME=LETTER`
+- Drive letters should be single characters (A-Z)
+
+**UNC paths not supported**
+- PCPath only works with mapped drive letters (e.g. `K:\`)
+- Convert UNC paths (`\\server\share`) to mapped drives first
+- Use Windows "Map Network Drive" feature
+
+### Web Version Issues
+
+**Auto-copy not working**
+- Your browser may have blocked clipboard access
+- Click the page first to give it focus
+- Check browser permissions for clipboard access
+- Use the manual "Copy" button instead
+
+**Settings not saving**
+- Check if localStorage is enabled in your browser
+- Private/Incognito mode may not persist settings
+- Try clearing browser cache and reloading
+
+**Theme colors look wrong**
+- Click the "Auto" button under Font # to reset font color
+- Try a preset theme first, then customize
+- Clear localStorage and refresh: Open DevTools → Application → Local Storage → Delete
+
+### General Issues
+
+**Config file format errors**
+```
+# ✅ CORRECT
+CONTENT=K
+GFX=G
+
+# ❌ WRONG
+CONTENT = K        # No spaces around =
+content=k          # Volume name should match exact case
+CONTENT=KK         # Drive letter should be single character
+```
+
+**Volume/drive not mounting**
+- Make sure the network volume is actually mounted before converting
+- On Mac: Check Finder sidebar or run `ls /Volumes/`
+- On Windows: Check "This PC" or run `net use` in cmd
+
+**Need to update mappings for whole team**
+- Update the `.pcpath_mappings` file on each machine
+- Or use MDM/group policy to push updated config
+- Changes take effect immediately (no reinstall needed)
+
+**Still having issues?**
+- Check the [GitHub Issues](https://github.com/marceltheproducer/PCPath/issues) page
+- Open a new issue with your OS version and config file contents
+- Include the exact error message you're seeing
+
+---
 
 ## File Structure
 
@@ -247,6 +372,8 @@ PCPath/
 │   ├── user_setup.sh                   # Per-user setup (runs at login)
 │   ├── com.pcpath.user-setup.plist     # LaunchAgent for login-time setup
 │   └── uninstall_mdm.sh               # MDM uninstall script
+├── web/
+│   └── PCPath_v1.2.0.html              # Standalone web version (browser-based)
 └── windows/
     ├── remote_install.ps1              # Windows one-liner installer
     ├── install.ps1                     # Windows installer

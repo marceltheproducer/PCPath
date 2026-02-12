@@ -1,0 +1,58 @@
+# PCPath Tool Manifest
+# Required by CI/CD pipeline — no manifest, no build.
+
+name: PCPath
+description: >
+  Cross-platform path converter that enables seamless file path conversion
+  between macOS and Windows, with configurable drive-to-volume mappings.
+version: 1.2.0
+
+platform: cross-platform  # macOS, Windows, and web
+
+security:
+  network_access: none        # No internet connection required. Fully offline.
+  data_collection: none       # No telemetry, analytics, or usage tracking.
+  data_storage: local_only    # User config stored locally in home directory only.
+  data_exfiltration: none     # No data is sent anywhere. Ever.
+  third_party_services: none  # No external APIs, servers, or cloud dependencies.
+  runs_offline: true          # 100% functional with no network connectivity.
+
+permissions:
+  filesystem:
+    - read_write: user home directory (~/.pcpath/, ~/.pcpath_mappings)
+    - read: mounted volumes and mapped drives
+  clipboard:
+    - macos: pbcopy/pbpaste (copies converted path to clipboard)
+    - windows: PowerShell Set-Clipboard (copies converted path to clipboard)
+  system:
+    - macos: Automator Quick Actions (Finder right-click integration)
+    - windows: Windows Registry (context menu entries in HKCU only)
+  network: none  # The tool itself never accesses the network.
+
+dependencies:
+  macos:
+    - name: bash
+      source: system
+    - name: automator
+      source: system
+    - name: pbcopy
+      source: system
+    - name: pbpaste
+      source: system
+  windows:
+    - name: powershell
+      source: system
+      version: ">=5.0"
+    - name: windows-registry
+      source: system
+  web:
+    - name: modern-browser
+      source: user
+      notes: HTML5, CSS3, JavaScript, localStorage API. No external libraries.
+
+built_from_template: false
+
+intended_users:
+  - Creative professionals working across macOS and Windows
+  - Media and production teams using shared network volumes
+  - IT teams deploying path converters across mixed-platform environments

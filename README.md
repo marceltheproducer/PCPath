@@ -217,18 +217,18 @@ For local testing without signing, omit `--sign`:
 ./kandji/build_pkg.sh 1.0.0
 ```
 
-**2. Upload to Kandji**
+**4. Upload to Kandji**
 
 1. Go to **Library > Add New > Custom App**
 2. Set install type to **Package**
 3. Upload `PCPath-1.0.0.pkg`
 4. Assign to your desired device blueprint(s)
 
-**3. (Optional) Add the uninstall script**
+**5. (Optional) Add the uninstall script**
 
 In the Custom App settings, paste the contents of `kandji/uninstall_mdm.sh` as the uninstall script. This cleanly removes PCPath from all users on the machine.
 
-**4. (Optional) Push a company-wide config**
+**6. (Optional) Push a company-wide config**
 
 To standardize drive mappings, create a Kandji **Custom Script** that writes `~/.pcpath_mappings` to each user's home directory. The config file format is the same one documented above.
 
@@ -356,6 +356,8 @@ CONTENT=KK         # Drive letter should be single character
 
 ```
 PCPath/
+├── tool.yaml                           # CI/CD manifest (name, version, permissions, security)
+├── .gitignore                          # Git ignore rules
 ├── remote_install.sh                   # macOS one-liner installer
 ├── install.sh                          # macOS installer
 ├── uninstall.sh                        # macOS uninstaller

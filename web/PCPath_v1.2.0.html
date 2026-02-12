@@ -224,6 +224,86 @@
     margin-top: 0.5rem;
   }
 
+  /* Auto-copy toggle */
+  .auto-copy-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--font-color);
+    opacity: 0.7;
+  }
+
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 20px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--border-color);
+    transition: background 0.2s;
+    border-radius: 20px;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: transform 0.2s;
+    border-radius: 50%;
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: #4ade80;
+  }
+
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+  }
+
+  .auto-copy-feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(74, 222, 128, 0.95);
+    color: #000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .auto-copy-feedback.show {
+    opacity: 1;
+  }
+
   /* Theme picker */
   .theme-picker {
     position: fixed;
@@ -407,8 +487,10 @@
   </div>
 </div>
 
-<h1>PCPath <span class="version">v1.1.1</span></h1>
+<h1>PCPath <span class="version">v1.2.0</span></h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
+
+<div class="auto-copy-feedback" id="auto-copy-feedback">✓ Auto-copied!</div>
 
 <div class="container">
   <div class="path-box">
@@ -422,6 +504,14 @@
     <label>Output <span id="output-badge" class="badge unknown"></span></label>
     <textarea id="output" readonly placeholder="Converted path appears here" spellcheck="false"></textarea>
     <button class="copy-btn" id="copy-btn" title="Copy to clipboard">Copy</button>
+  </div>
+
+  <div class="auto-copy-toggle">
+    <span>Auto-copy to clipboard</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="auto-copy-checkbox">
+      <span class="toggle-slider"></span>
+    </label>
   </div>
 
   <button class="mappings-toggle" id="mappings-toggle">
@@ -548,6 +638,8 @@ const copyBtn = document.getElementById("copy-btn");
 const toggleBtn = document.getElementById("mappings-toggle");
 const panel = document.getElementById("mappings-panel");
 const listEl = document.getElementById("mappings-list");
+const autoCopyCheckbox = document.getElementById("auto-copy-checkbox");
+const autoCopyFeedback = document.getElementById("auto-copy-feedback");
 
 function updateBadges(type) {
   inputBadge.className = "badge";
@@ -571,6 +663,13 @@ function updateBadges(type) {
   }
 }
 
+function showAutoCopyFeedback() {
+  autoCopyFeedback.classList.add("show");
+  setTimeout(() => {
+    autoCopyFeedback.classList.remove("show");
+  }, 1200);
+}
+
 function onInput() {
   const val = inputEl.value;
   const firstLine = val.split("\n").find(l => l.trim()) || "";
@@ -582,7 +681,17 @@ function onInput() {
     return;
   }
 
-  outputEl.value = convert(val);
+  const converted = convert(val);
+  outputEl.value = converted;
+
+  // Auto-copy if enabled
+  if (autoCopyCheckbox.checked && converted) {
+    navigator.clipboard.writeText(converted).then(() => {
+      showAutoCopyFeedback();
+    }).catch(() => {
+      // Silently fail if clipboard access denied
+    });
+  }
 }
 
 inputEl.addEventListener("input", onInput);
@@ -665,6 +774,27 @@ document.getElementById("reset-mappings").addEventListener("click", () => {
 });
 
 renderMappings();
+
+// --- Auto-copy toggle ---
+
+const AUTO_COPY_KEY = "pcpath_auto_copy";
+
+// Load auto-copy preference
+function loadAutoCopy() {
+  try {
+    const saved = localStorage.getItem(AUTO_COPY_KEY);
+    if (saved !== null) {
+      autoCopyCheckbox.checked = saved === "true";
+    }
+  } catch {}
+}
+
+// Save auto-copy preference
+autoCopyCheckbox.addEventListener("change", () => {
+  localStorage.setItem(AUTO_COPY_KEY, autoCopyCheckbox.checked);
+});
+
+loadAutoCopy();
 
 // --- Theme Picker ---
 

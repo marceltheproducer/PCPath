@@ -1,10 +1,10 @@
 #!/bin/bash
 # PCPath Remote Installer for macOS
-# Usage: curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/master/remote_install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/main/remote_install.sh | bash
 
 set -e
 
-REPO_URL="https://github.com/marceltheproducer/PCPath/archive/refs/heads/master.tar.gz"
+REPO_URL="https://github.com/marceltheproducer/PCPath/archive/refs/heads/main.tar.gz"
 TMPDIR_PATH="$(mktemp -d)"
 
 cleanup() {

@@ -718,8 +718,8 @@ toggleBtn.addEventListener("click", () => {
 
 // HTML escape utility
 const escapeHtml = (() => {
-  const map = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
-  return str => str.replace(/[&"<>]/g, m => map[m]);
+  const map = { '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' };
+  return str => str.replace(/[&"'<>]/g, m => map[m]);
 })();
 
 function renderMappings() {
@@ -744,7 +744,8 @@ listEl.addEventListener("input", (e) => {
     e.target.value = val;
   }
   mappings[idx][field] = val;
-  saveMappings(mappings);
+  // Only persist mappings that have both volume name and drive letter
+  saveMappings(mappings.filter(m => m.vol.trim() && m.letter.trim()));
   onInput();
 });
 

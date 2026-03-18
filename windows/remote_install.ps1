@@ -1,9 +1,9 @@
 # PCPath Remote Installer for Windows
-# Usage: irm https://raw.githubusercontent.com/marceltheproducer/PCPath/master/windows/remote_install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/marceltheproducer/PCPath/main/windows/remote_install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-$RepoUrl = "https://github.com/marceltheproducer/PCPath/archive/refs/heads/master.zip"
+$RepoUrl = "https://github.com/marceltheproducer/PCPath/archive/refs/heads/main.zip"
 $TmpDir = Join-Path $env:TEMP "pcpath_install_$([System.IO.Path]::GetRandomFileName())"
 $ZipFile = Join-Path $TmpDir "pcpath.zip"
 

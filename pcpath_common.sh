@@ -33,6 +33,8 @@ pcpath_load_mappings() {
         letter="${letter%"${letter##*[![:space:]]}"}"
         letter="$(echo "$letter" | tr '[:lower:]' '[:upper:]')"
         [[ -z "$vol" || -z "$letter" ]] && continue
+        # Validate drive letter is a single A-Z character
+        [[ ! "$letter" =~ ^[A-Z]$ ]] && continue
         vol_names+=("$vol")
         drive_letters+=("$letter")
     done <<< "$config_data"

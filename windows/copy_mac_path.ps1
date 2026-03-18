@@ -10,36 +10,11 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-$ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
+# Load shared config
+$CommonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "pcpath_common.ps1"
+. $CommonPath
 
-# Default mappings: drive letter -> volume name
-$DriveToVol = [System.Collections.Hashtable]::new([System.StringComparer]::OrdinalIgnoreCase)
-$DefaultMappings = @"
-CONTENT=K
-GFX=G
-EDIT=E
-THE_NETWORK=N
-"@
-
-$Source = $DefaultMappings
-if (Test-Path $ConfigFile) {
-    $Source = Get-Content $ConfigFile -Raw -Encoding UTF8
-}
-
-$Source -split "`n" | ForEach-Object {
-    $line = $_.Trim()
-    if ($line -and -not $line.StartsWith("#")) {
-        $parts = $line -split "=", 2
-        if ($parts.Count -eq 2) {
-            $volName = $parts[0].Trim()
-            $driveLetter = $parts[1].Trim().ToUpper()
-            # Validate drive letter is a single character A-Z
-            if ($driveLetter -match '^[A-Z]$') {
-                $DriveToVol[$driveLetter] = $volName
-            }
-        }
-    }
-}
+$DriveToVol = Get-PCPathMappings -DriveToVolume
 
 if (-not $FilePath) {
     Write-Host "Usage: copy_mac_path.ps1 <file-path>"

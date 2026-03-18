@@ -56,7 +56,7 @@ Don't want to install anything? Use the **web version** for quick path conversio
 **Quick install (no git required):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/master/remote_install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/main/remote_install.sh | bash
 ```
 
 **Or clone and install manually:**
@@ -89,7 +89,7 @@ Both appear in **Finder right-click > Quick Actions**.
 **Quick install (no git required) — open PowerShell and run:**
 
 ```powershell
-irm https://raw.githubusercontent.com/marceltheproducer/PCPath/master/windows/remote_install.ps1 | iex
+irm https://raw.githubusercontent.com/marceltheproducer/PCPath/main/windows/remote_install.ps1 | iex
 ```
 
 **Or clone and install manually:**

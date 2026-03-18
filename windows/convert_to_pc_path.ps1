@@ -14,36 +14,11 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-$ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
+# Load shared config
+$CommonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "pcpath_common.ps1"
+. $CommonPath
 
-# Build vol name -> drive letter mapping
-$VolToDrive = [System.Collections.Hashtable]::new([System.StringComparer]::OrdinalIgnoreCase)
-$DefaultMappings = @"
-CONTENT=K
-GFX=G
-EDIT=E
-THE_NETWORK=N
-"@
-
-$Source = $DefaultMappings
-if (Test-Path $ConfigFile) {
-    $Source = Get-Content $ConfigFile -Raw -Encoding UTF8
-}
-
-$Source -split "`n" | ForEach-Object {
-    $line = $_.Trim()
-    if ($line -and -not $line.StartsWith("#")) {
-        $parts = $line -split "=", 2
-        if ($parts.Count -eq 2) {
-            $volName = $parts[0].Trim()
-            $driveLetter = $parts[1].Trim().ToUpper()
-            # Validate drive letter is a single character A-Z
-            if ($driveLetter -match '^[A-Z]$') {
-                $VolToDrive[$volName] = $driveLetter
-            }
-        }
-    }
-}
+$VolToDrive = Get-PCPathMappings
 
 # Get path from argument or clipboard
 if (-not $Path) {
@@ -67,14 +42,14 @@ $Path -split "`n" | ForEach-Object {
 
         if ($VolToDrive.ContainsKey($VolName)) {
             $Drive = $VolToDrive[$VolName]
-            $ResultList.Add("${Drive}:\$Rest")
+            $ResultList.Add($Drive + ':' + '\' + $Rest)
         } else {
             # Unknown volume — include name so user knows which to map
-            $ResultList.Add("?($VolName):\$Rest")
+            $ResultList.Add('?(' + $VolName + '):\' + $Rest)
         }
     } else {
         # Not a /Volumes/ path, just swap slashes
-        $ResultList.Add(($Line -replace "/", "\"))
+        $ResultList.Add(($Line -replace '/', '\'))
     }
 }
 

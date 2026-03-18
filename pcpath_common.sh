@@ -16,7 +16,13 @@ pcpath_load_mappings() {
     drive_letters=()
 
     local config_data="$PCPATH_DEFAULTS"
-    [[ -f "$PCPATH_CONFIG" && -r "$PCPATH_CONFIG" ]] && config_data=$(cat "$PCPATH_CONFIG")
+    if [[ -f "$PCPATH_CONFIG" ]]; then
+        if [[ -r "$PCPATH_CONFIG" ]]; then
+            config_data=$(cat "$PCPATH_CONFIG")
+        else
+            echo "Warning: Cannot read $PCPATH_CONFIG (permission denied). Using default mappings." >&2
+        fi
+    fi
 
     while IFS= read -r line; do
         # Strip carriage returns (Windows line endings)

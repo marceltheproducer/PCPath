@@ -456,7 +456,7 @@
 
 <!-- Theme Picker -->
 <div class="theme-picker">
-  <button class="theme-btn" id="theme-toggle">
+  <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme menu" aria-haspopup="true" aria-expanded="false">
     <span class="theme-swatch" id="theme-swatch"></span>
     <span id="theme-label">Theme</span>
   </button>
@@ -507,14 +507,14 @@
   </div>
 
   <div class="auto-copy-toggle">
-    <span>Auto-copy to clipboard</span>
+    <label for="auto-copy-checkbox">Auto-copy to clipboard</label>
     <label class="toggle-switch">
       <input type="checkbox" id="auto-copy-checkbox">
       <span class="toggle-slider"></span>
     </label>
   </div>
 
-  <button class="mappings-toggle" id="mappings-toggle">
+  <button class="mappings-toggle" id="mappings-toggle" aria-controls="mappings-panel" aria-expanded="false">
     <span class="chevron">&#9654;</span> Drive mappings
   </button>
 
@@ -689,7 +689,14 @@ function onInput() {
     navigator.clipboard.writeText(converted).then(() => {
       showAutoCopyFeedback();
     }).catch(() => {
-      // Silently fail if clipboard access denied
+      autoCopyFeedback.textContent = "Auto-copy failed (check browser permissions)";
+      autoCopyFeedback.style.background = "rgba(231, 76, 60, 0.95)";
+      autoCopyFeedback.classList.add("show");
+      setTimeout(() => {
+        autoCopyFeedback.classList.remove("show");
+        autoCopyFeedback.textContent = "\u2713 Auto-copied!";
+        autoCopyFeedback.style.background = "";
+      }, 2000);
     });
   }
 }
@@ -707,6 +714,9 @@ copyBtn.addEventListener("click", () => {
       copyBtn.textContent = "Copy";
       copyBtn.classList.remove("copied");
     }, 1500);
+  }).catch(() => {
+    copyBtn.textContent = "Failed";
+    setTimeout(() => { copyBtn.textContent = "Copy"; }, 1500);
   });
 });
 
@@ -714,6 +724,7 @@ copyBtn.addEventListener("click", () => {
 toggleBtn.addEventListener("click", () => {
   toggleBtn.classList.toggle("open");
   panel.classList.toggle("open");
+  toggleBtn.setAttribute("aria-expanded", panel.classList.contains("open"));
 });
 
 // HTML escape utility
@@ -725,10 +736,10 @@ const escapeHtml = (() => {
 function renderMappings() {
   listEl.innerHTML = mappings.map((m, i) => `
     <div class="mapping-row">
-      <input class="vol-input" value="${escapeHtml(m.vol)}" placeholder="VOLUME_NAME" data-i="${i}" data-field="vol">
+      <input class="vol-input" value="${escapeHtml(m.vol)}" placeholder="VOLUME_NAME" data-i="${i}" data-field="vol" aria-label="Volume name">
       <span class="eq">=</span>
-      <input class="letter-input" value="${escapeHtml(m.letter)}" maxlength="1" placeholder="X" data-i="${i}" data-field="letter">
-      <button class="mapping-remove" data-i="${i}" title="Remove">&times;</button>
+      <input class="letter-input" value="${escapeHtml(m.letter)}" maxlength="1" placeholder="X" data-i="${i}" data-field="letter" aria-label="Drive letter">
+      <button class="mapping-remove" data-i="${i}" title="Remove" aria-label="Remove mapping">&times;</button>
     </div>
   `).join('');
 }
@@ -792,7 +803,7 @@ function loadAutoCopy() {
 
 // Save auto-copy preference
 autoCopyCheckbox.addEventListener("change", () => {
-  localStorage.setItem(AUTO_COPY_KEY, autoCopyCheckbox.checked);
+  localStorage.setItem(AUTO_COPY_KEY, JSON.stringify(autoCopyCheckbox.checked));
 });
 
 loadAutoCopy();
@@ -933,6 +944,7 @@ fontHexAuto.addEventListener("click", () => {
 themeToggle.addEventListener("click", (e) => {
   e.stopPropagation();
   themeDropdown.classList.toggle("open");
+  themeToggle.setAttribute("aria-expanded", themeDropdown.classList.contains("open"));
 });
 
 // Close on outside click

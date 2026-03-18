@@ -13,3 +13,17 @@ Desktop.ini
 *~
 .vscode/
 .idea/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Dependencies (future-proofing)
+node_modules/
+
+# Build output
+dist/
+build/

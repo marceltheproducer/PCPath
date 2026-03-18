@@ -56,6 +56,8 @@ convert_path() {
                 pc_path="?(${vol_name}):\\"
             fi
         else
+            # Non-volume path (e.g. /Users/..., /tmp/...) — cannot convert
+            echo "Warning: Not a /Volumes/ path, cannot convert: $mac_path" >&2
             pc_path="$mac_path"
         fi
     fi
@@ -78,5 +80,8 @@ for f in "$@"; do
 done
 
 if [[ -n "$output" ]]; then
-    printf '%s' "$output" | pbcopy
+    if ! printf '%s' "$output" | pbcopy 2>/dev/null; then
+        echo "Warning: Failed to copy to clipboard. Output:" >&2
+        printf '%s\n' "$output" >&2
+    fi
 fi

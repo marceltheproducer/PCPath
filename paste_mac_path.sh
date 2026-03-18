@@ -23,6 +23,13 @@ convert_to_mac() {
     local mac_path=""
     local matched=false
 
+    # Reject UNC paths (\\server\share) — not supported
+    if [[ "$pc_path" == \\\\* || "$pc_path" == //* ]]; then
+        echo "Warning: UNC path not supported: $pc_path (use a mapped drive letter instead)" >&2
+        printf '%s' "$pc_path"
+        return
+    fi
+
     # Normalize backslashes to forward slashes
     pc_path="${pc_path//\\//}"
 
@@ -68,7 +75,10 @@ if [[ $# -gt 0 ]]; then
 elif [[ ! -t 0 ]]; then
     input=$(cat)
 else
-    input=$(pbpaste)
+    if ! input=$(pbpaste 2>/dev/null); then
+        echo "Error: Failed to read from clipboard (pbpaste unavailable)." >&2
+        exit 1
+    fi
 fi
 
 # Convert each line
@@ -87,6 +97,8 @@ while IFS= read -r line; do
 done <<< "$input"
 
 if [[ -n "$output" ]]; then
-    printf '%s' "$output" | pbcopy
+    if ! printf '%s' "$output" | pbcopy 2>/dev/null; then
+        echo "Warning: Failed to copy to clipboard." >&2
+    fi
     printf '%s' "$output"
 fi

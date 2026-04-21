@@ -56,7 +56,6 @@ echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath installed via manual installer" >> 
 echo "Action required: enable Quick Actions in System Settings"
 echo "  -> Finder -> check \"Copy as PC Path\" and \"Convert to Mac Path\""
 echo ""
-sleep 1
 open "x-apple.systempreferences:com.apple.ExtensionsPreferences" 2>/dev/null || \
     echo "  (Open System Settings manually -> search for \"Extensions\" -> select Finder)"
 echo ""
@@ -72,12 +71,14 @@ else
     _letter="${drive_letters[0]}"
     _input="/Volumes/${_vol}/Projects/test.mp4"
     _prefix="/Volumes/${_vol}/"
+    shopt -s nocasematch
     _remainder="${_input:${#_prefix}}"
+    shopt -u nocasematch
     _result="${_letter}:\\${_remainder}"
     _result="${_result//\//\\}"
     printf "  Input:   %s\n" "$_input"
     printf "  Output:  %s\n" "$_result"
-    if [[ "$_result" == "${_letter}:"* ]]; then
+    if [[ "$_result" == "${_letter}:\\Projects\\test.mp4" ]]; then
         echo "OK  Conversion working"
     else
         echo "FAIL  Conversion failed -- check $CONFIG_FILE"

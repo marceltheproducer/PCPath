@@ -58,5 +58,7 @@ echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath ${CURRENT_VERSION:-unknown} install
 
 # Notify user on first install to enable Quick Actions in System Settings
 if [[ "$IS_FIRST_INSTALL" == true ]]; then
-    osascript -e 'display notification "Open System Settings -> Extensions -> Finder to enable PCPath Quick Actions." with title "PCPath Installed"' 2>/dev/null || true
+    # NOTE: display notification is best-effort -- may be silently dropped if
+    # Notification Center is not yet ready at first login or if Focus is active.
+    osascript -e 'display notification "In System Settings, search for Extensions and enable PCPath Quick Actions." with title "PCPath Installed"' 2>/dev/null || true
 fi

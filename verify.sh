@@ -81,9 +81,7 @@ if [[ -x "$INSTALL_DIR/pcpath_common.sh" ]]; then
         _letter="${drive_letters[0]}"
         _input="/Volumes/${_vol}/Projects/test.mp4"
         _prefix="/Volumes/${_vol}/"
-        shopt -s nocasematch
         _remainder="${_input:${#_prefix}}"
-        shopt -u nocasematch
         _result="${_letter}:\\${_remainder}"
         _result="${_result//\//\\}"
         if [[ "$_result" == "${_letter}:\\Projects\\test.mp4" ]]; then

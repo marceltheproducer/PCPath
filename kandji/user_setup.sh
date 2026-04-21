@@ -54,7 +54,7 @@ if [[ -n "$CURRENT_VERSION" ]]; then
 fi
 
 # Write install log
-echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath ${CURRENT_VERSION:-unknown} installed via MDM" >> "$LOG_FILE"
+echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath ${CURRENT_VERSION:-unknown} installed via MDM" >> "$LOG_FILE" || true
 
 # Notify user on first install to enable Quick Actions in System Settings
 if [[ "$IS_FIRST_INSTALL" == true ]]; then

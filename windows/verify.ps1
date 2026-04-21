@@ -10,9 +10,11 @@ $LogFile    = "$InstallDir\install.log"
 
 $Pass = 0
 $Fail = 0
+$Warn = 0
 
 function Write-Pass { param([string]$Msg) Write-Host "  [OK]   $Msg"; $script:Pass++ }
 function Write-Fail { param([string]$Msg) Write-Host "  [FAIL] $Msg"; $script:Fail++ }
+function Write-Warn { param([string]$Msg) Write-Host "  [!!]   $Msg"; $script:Warn++ }
 
 Write-Host ""
 Write-Host "PCPath Verification"
@@ -86,7 +88,7 @@ if ((Test-Path $CommonScript) -and (Test-Path $ConfigFile)) {
             Write-Fail "Self-test failed: mapping round-trip check failed -- check $ConfigFile"
         }
     } else {
-        Write-Host "  [!!]  No mappings loaded -- self-test skipped"
+        Write-Warn "No mappings loaded -- self-test skipped"
     }
 }
 
@@ -94,6 +96,9 @@ Write-Host ""
 if ($Fail -gt 0) {
     Write-Host "$Fail issue(s) found. See above."
     exit 1
+} elseif ($Warn -gt 0) {
+    Write-Host "All critical checks passed. $Warn item(s) need manual confirmation."
+    exit 0
 } else {
     Write-Host "All checks passed."
     exit 0

@@ -49,9 +49,6 @@ fi
 
 echo ""
 
-# Record install
-echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath installed via manual installer" >> "$LOG_FILE"
-
 # System Settings handoff
 echo "Action required: enable Quick Actions in System Settings"
 echo "  -> Finder -> check \"Copy as PC Path\" and \"Convert to Mac Path\""
@@ -71,9 +68,7 @@ else
     _letter="${drive_letters[0]}"
     _input="/Volumes/${_vol}/Projects/test.mp4"
     _prefix="/Volumes/${_vol}/"
-    shopt -s nocasematch
     _remainder="${_input:${#_prefix}}"
-    shopt -u nocasematch
     _result="${_letter}:\\${_remainder}"
     _result="${_result//\//\\}"
     printf "  Input:   %s\n" "$_input"
@@ -85,6 +80,9 @@ else
         exit 1
     fi
 fi
+
+# Record install (after self-test passes)
+echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath installed via manual installer" >> "$LOG_FILE"
 
 echo ""
 echo "OK  PCPath installed successfully"

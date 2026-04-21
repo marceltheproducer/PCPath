@@ -87,9 +87,6 @@ if (-not (Test-Path $ConfigFile)) {
 
 Write-Host ""
 
-# Record install
-Add-Content -Path $LogFile -Value "$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss') PCPath installed via manual installer" -Encoding UTF8
-
 # Self-test
 Write-Host "Running self-test..."
 . "$InstallDir\pcpath_common.ps1"
@@ -97,18 +94,26 @@ $DriveToVol = Get-PCPathMappings -DriveToVolume
 if ($DriveToVol.Count -eq 0) {
     Write-Host "  Warning: no mappings found -- skipping conversion test"
 } else {
-    $TestLetter = @($DriveToVol.Keys)[0]
-    $TestVol    = $DriveToVol[$TestLetter]
-    $TestInput  = "${TestLetter}:\Projects\test.mp4"
-    $MacPath    = "/Volumes/$TestVol/Projects/test.mp4"
+    $VolToLetter = Get-PCPathMappings
+    $TestLetter  = @($DriveToVol.Keys)[0]
+    $TestVol     = $DriveToVol[$TestLetter]
+    $TestInput   = "${TestLetter}:\Projects\test.mp4"
+    $MacPath     = "/Volumes/$TestVol/Projects/test.mp4"
     Write-Host "  Input:   $TestInput"
     Write-Host "  Output:  $MacPath"
-    if ($MacPath -eq "/Volumes/$TestVol/Projects/test.mp4") {
+    if ($MacPath -like "/Volumes/*" -and $VolToLetter[$TestVol] -eq $TestLetter) {
         Write-Host "OK  Conversion working"
     } else {
         Write-Host "FAIL  Conversion failed -- check $ConfigFile" -ForegroundColor Red
         exit 1
     }
+}
+
+# Record install
+try {
+    Add-Content -Path $LogFile -Value "$(([datetime]::UtcNow).ToString('yyyy-MM-ddTHH:mm:ss')) PCPath installed via manual installer" -Encoding UTF8
+} catch {
+    Write-Host "  (Could not write install log: $_)" -ForegroundColor Yellow
 }
 
 Write-Host ""

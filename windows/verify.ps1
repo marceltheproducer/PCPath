@@ -65,9 +65,11 @@ if (Test-Path $LogFile) {
     Write-Pass "Install log: $LogLine"
 }
 
-# 5. Self-test: live conversion
+# 5. Self-test: round-trip mapping check (verifies config loads and maps correctly)
+# Self-test is skipped when the config is missing: Get-PCPathMappings falls back to
+# hardcoded defaults, which would produce a misleading OK alongside a config FAIL.
 $CommonScript = Join-Path $InstallDir "pcpath_common.ps1"
-if (Test-Path $CommonScript) {
+if ((Test-Path $CommonScript) -and (Test-Path $ConfigFile)) {
     . $CommonScript
     $DriveToVol  = Get-PCPathMappings -DriveToVolume
     $VolToLetter = Get-PCPathMappings
@@ -76,8 +78,8 @@ if (Test-Path $CommonScript) {
         $TestVol    = $DriveToVol[$TestLetter]
         $TestInput  = "${TestLetter}:\Projects\test.mp4"
         $MacPath    = "/Volumes/$TestVol/Projects/test.mp4"
-        Write-Host "  Input:   $TestInput"
-        Write-Host "  Output:  $MacPath"
+        Write-Host "  Windows: $TestInput"
+        Write-Host "  Mac:     $MacPath"
         if ($MacPath -like "/Volumes/*" -and $VolToLetter[$TestVol] -eq $TestLetter) {
             Write-Pass "Self-test passed: ${TestLetter}:\ -> /Volumes/$TestVol"
         } else {

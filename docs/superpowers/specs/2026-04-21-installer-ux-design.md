@@ -17,7 +17,6 @@ The current installers complete silently with flat text output. On macOS, Quick 
 
 - GUI/wizard installers
 - Web version changes
-- Kandji/MDM path changes (MDM handles the Extensions enable step separately)
 
 ---
 
@@ -52,7 +51,7 @@ After the install steps complete, the installer:
    - Falls back gracefully if the URL scheme fails (prints manual path instead)
 3. Pauses 1 second then continues to the self-test
 
-This is a passive handoff — the installer opens the door, the user checks the two boxes. IT deploying via Kandji skips this (MDM manages the Extensions state).
+This is a passive handoff — the installer opens the door, the user checks the two boxes. IT deploying via Kandji does not use `install.sh` — the MDM path handles its own notification (see MDM section below).
 
 ### 3. Self-Test (both platforms)
 
@@ -147,13 +146,43 @@ This makes the verify scripts usable in IT automation / MDM health checks.
 
 ---
 
+## MDM / Kandji Path (`user_setup.sh`)
+
+The Kandji deployment uses `postinstall` → `user_setup.sh` — a completely separate code path that never calls `install.sh`. It runs silently as the logged-in user at login via LaunchAgent. It has the same silent-install gap: workflows land on disk but the user gets no prompt to enable them.
+
+### Changes to `user_setup.sh`
+
+**1. Install log**
+Write a timestamped log entry to `~/.pcpath/install.log` on every run (both first install and upgrades). The verify script reads this log.
+
+```
+2026-04-21T09:15:00 PCPath 1.2.0 installed via MDM
+```
+
+On upgrade runs (version stamp already matches), write nothing — log is only for actual installs.
+
+**2. First-install notification (macOS only)**
+After copying files on a first install (not a version-match skip), fire a macOS notification:
+
+```
+osascript -e 'display notification "Open System Settings → Extensions → Finder to enable PCPath Quick Actions." with title "PCPath Installed"'
+```
+
+This only fires when the workflows were actually written (i.e. `INSTALLED_VERSION != CURRENT_VERSION`). Users who already set it up and get an upgrade do not see a notification.
+
+**3. Install log (shared with `install.sh`)**
+Both `install.sh` and `user_setup.sh` write to `~/.pcpath/install.log` on a successful install. The format is the same; `install.sh` writes `installed via manual installer`, `user_setup.sh` writes `installed via MDM`. The verify script reads this log and reports the install method and date. If the log is absent (legacy install before this change), it skips that check silently.
+
+---
+
 ## File Changes Summary
 
 | File | Change |
 |---|---|
-| `install.sh` | Numbered steps, macOS Settings handoff, self-test, updated success block |
+| `install.sh` | Numbered steps, macOS Settings handoff, self-test, install log write, updated success block |
 | `windows/install.ps1` | Numbered steps, self-test, updated success block |
+| `kandji/user_setup.sh` | Install log write, first-install notification |
 | `verify.sh` | New file |
 | `windows/verify.ps1` | New file |
 
-No changes to: conversion scripts, config format, Kandji scripts, web version, or remote installers.
+No changes to: conversion scripts, config format, `postinstall`, web version, or remote installers.

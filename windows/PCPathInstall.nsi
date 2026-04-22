@@ -1,5 +1,5 @@
 ; PCPath Installer for Windows
-; Build from repo root: makensis windows\PCPathInstall.nsi
+; Build: makensis windows\PCPathInstall.nsi  (any working directory)
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
@@ -7,7 +7,7 @@
 ;--------------------------------
 ; Metadata
 Name "PCPath"
-OutFile "windows\PCPathInstall.exe"
+OutFile "${__FILEDIR__}\PCPathInstall.exe"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 Unicode True
@@ -31,14 +31,14 @@ Section "Install"
     ; Install directory and runtime scripts
     CreateDirectory "$PROFILE\.pcpath"
     SetOutPath "$PROFILE\.pcpath"
-    File "windows\pcpath_common.ps1"
-    File "windows\copy_mac_path.ps1"
-    File "windows\convert_to_pc_path.ps1"
+    File "${__FILEDIR__}\pcpath_common.ps1"
+    File "${__FILEDIR__}\copy_mac_path.ps1"
+    File "${__FILEDIR__}\convert_to_pc_path.ps1"
 
     ; Default config — only write if not present (preserves user customizations on reinstall)
     ${IfNot} ${FileExists} "$PROFILE\.pcpath_mappings"
         SetOutPath "$PROFILE"
-        File /oname=".pcpath_mappings" "pcpath_mappings.default"
+        File /oname=.pcpath_mappings "${__FILEDIR__}\..\pcpath_mappings.default"
         SetOutPath "$PROFILE\.pcpath"
     ${EndIf}
 

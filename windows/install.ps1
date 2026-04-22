@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ScriptDir  = if ($PSScriptRoot) { $PSScriptRoot } else { $PWD.Path }
 $InstallDir = "$env:USERPROFILE\.pcpath"
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 $LogFile    = "$InstallDir\install.log"

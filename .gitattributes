@@ -1,0 +1,4 @@
+*.sh text eol=lf
+*.wflow text eol=lf
+*.plist text eol=lf
+windows/PCPathInstall.exe binary

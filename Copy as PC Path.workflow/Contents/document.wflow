@@ -141,7 +141,7 @@ fi</string>
 		<key>serviceInputTypeIdentifier</key>
 		<string>com.apple.Automator.fileSystemObject</string>
 		<key>workflowTypeIdentifier</key>
-		<string>com.apple.Automator.servicesMenu</string>
+		<string>com.apple.automator.servicesMenu</string>
 	</dict>
 </dict>
 </plist>

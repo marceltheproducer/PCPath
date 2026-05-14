@@ -38,7 +38,7 @@ Var IsUpdate
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE "PCPath ${PCPATH_VERSION} Installed"
-!define MUI_FINISHPAGE_TEXT "PCPath build ${PCPATH_BUILD} is now active.$\r$\n$\r$\nContext menu actions:$\r$\n  - Right-click any file or folder: Copy as Mac Path$\r$\n  - Right-click any file or folder: Copy Names$\r$\n  - Right-click empty space or desktop: Convert to PC Path$\r$\n$\r$\nDrive mappings: $PROFILE\.pcpath_mappings$\r$\nInstall log: $PROFILE\.pcpath\install.log"
+!define MUI_FINISHPAGE_TEXT "PCPath build ${PCPATH_BUILD} is now active.$\r$\n$\r$\nContext menu actions (grouped at top of right-click menu):$\r$\n  - Copy as Mac Path  (file or folder)$\r$\n  - Copy as Path  (file or folder, Windows path)$\r$\n  - Copy Names  (file or folder)$\r$\n  - Convert to PC Path  (empty space or desktop)$\r$\n$\r$\nDrive mappings: $PROFILE\.pcpath_mappings$\r$\nInstall log: $PROFILE\.pcpath\install.log"
 
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -84,6 +84,7 @@ Section "Install"
     File "${__FILEDIR__}\copy_mac_path.ps1"
     File "${__FILEDIR__}\convert_to_pc_path.ps1"
     File "${__FILEDIR__}\copy_names.ps1"
+    File "${__FILEDIR__}\copy_path.ps1"
     File "${__FILEDIR__}\pcpath_launch.vbs"
 
     ; Write version stamp so users can confirm which build is installed
@@ -121,12 +122,14 @@ Section "Install"
     ; All verbs go through pcpath_launch.vbs so the PowerShell console is
     ; fully hidden (no flash). File/folder verbs also set MultiSelectModel
     ; = Player so Windows invokes the verb once for the whole selection
-    ; instead of once per file.
+    ; instead of once per file. Position = Top groups all PCPath verbs at
+    ; the top of the legacy right-click menu.
 
     ; Context menu: Copy as Mac Path — files
     WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          ""                 "Copy as Mac Path"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "Icon"             "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "Position"         "Top"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath\command"  ""                 \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%1"'
 
@@ -134,31 +137,36 @@ Section "Install"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          ""                 "Copy as Mac Path"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "Icon"             "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "Position"         "Top"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath\command"  ""                 \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%1"'
 
     ; Context menu: Copy as Mac Path — directory background
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          ""     "Copy as Mac Path"
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath\command"  ""     \
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          ""         "Copy as Mac Path"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          "Icon"     "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          "Position" "Top"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath\command"  ""         \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%V"'
 
     ; Context menu: Convert to PC Path — directory background
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          ""     "Convert to PC Path"
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath\command"  ""     \
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          ""         "Convert to PC Path"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          "Icon"     "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          "Position" "Top"
+    WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath\command"  ""         \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
 
     ; Context menu: Convert to PC Path — desktop background
-    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          ""     "Convert to PC Path"
-    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath\command"  ""     \
+    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          ""         "Convert to PC Path"
+    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          "Icon"     "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          "Position" "Top"
+    WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath\command"  ""         \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
 
     ; Context menu: Copy Names — files
     WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          ""                 "Copy Names"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "Icon"             "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "Position"         "Top"
     WriteRegStr HKCU "Software\Classes\*\shell\CopyNames\command"  ""                 \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_names.ps1" "%1"'
 
@@ -166,8 +174,25 @@ Section "Install"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          ""                 "Copy Names"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "Icon"             "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "Position"         "Top"
     WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames\command"  ""                 \
         'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_names.ps1" "%1"'
+
+    ; Context menu: Copy as Path — files
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsPath"          ""                 "Copy as Path"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsPath"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsPath"          "Position"         "Top"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsPath\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_path.ps1" "%1"'
+
+    ; Context menu: Copy as Path — directories
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsPath"          ""                 "Copy as Path"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsPath"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsPath"          "Position"         "Top"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsPath\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_path.ps1" "%1"'
 
 SectionEnd
 
@@ -183,6 +208,8 @@ Section "Uninstall"
     DeleteRegKey HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"
     DeleteRegKey HKCU "Software\Classes\*\shell\CopyNames"
     DeleteRegKey HKCU "Software\Classes\Directory\shell\CopyNames"
+    DeleteRegKey HKCU "Software\Classes\*\shell\CopyAsPath"
+    DeleteRegKey HKCU "Software\Classes\Directory\shell\CopyAsPath"
 
     ; Remove install directory — preserves $PROFILE\.pcpath_mappings intentionally
     RMDir /r "$PROFILE\.pcpath"

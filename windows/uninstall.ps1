@@ -15,7 +15,9 @@ $RegPaths = @(
     "HKCU:\Software\Classes\Directory\shell\CopyAsMacPath",
     "HKCU:\Software\Classes\Directory\Background\shell\CopyAsMacPath",
     "HKCU:\Software\Classes\Directory\Background\shell\ConvertToPCPath",
-    "HKCU:\Software\Classes\DesktopBackground\shell\ConvertToPCPath"
+    "HKCU:\Software\Classes\DesktopBackground\shell\ConvertToPCPath",
+    "HKCU:\Software\Classes\*\shell\CopyNames",
+    "HKCU:\Software\Classes\Directory\shell\CopyNames"
 )
 
 foreach ($path in $RegPaths) {

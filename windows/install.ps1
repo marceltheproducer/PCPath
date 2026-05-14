@@ -9,7 +9,7 @@ $InstallDir = "$env:USERPROFILE\.pcpath"
 $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
 $LogFile    = "$InstallDir\install.log"
 $Step       = 0
-$Total      = 4
+$Total      = 5
 
 function Write-Step {
     param([string]$Label)
@@ -28,6 +28,7 @@ Write-Step "Copying scripts..."
 Copy-Item "$ScriptDir\pcpath_common.ps1"        "$InstallDir\" -Force
 Copy-Item "$ScriptDir\copy_mac_path.ps1"        "$InstallDir\" -Force
 Copy-Item "$ScriptDir\convert_to_pc_path.ps1"   "$InstallDir\" -Force
+Copy-Item "$ScriptDir\copy_names.ps1"           "$InstallDir\" -Force
 Write-Host "done"
 
 Write-Step "Adding context menu entries..."
@@ -36,10 +37,13 @@ $RegPathDir            = "HKCU:\Software\Classes\Directory\shell\CopyAsMacPath"
 $RegPathBg             = "HKCU:\Software\Classes\Directory\Background\shell\CopyAsMacPath"
 $RegPathConvertBg      = "HKCU:\Software\Classes\Directory\Background\shell\ConvertToPCPath"
 $RegPathConvertDesktop = "HKCU:\Software\Classes\DesktopBackground\shell\ConvertToPCPath"
-$AllRegPaths = @($RegPathFile, $RegPathDir, $RegPathBg, $RegPathConvertBg, $RegPathConvertDesktop)
+$RegPathCopyNamesFile  = "HKCU:\Software\Classes\*\shell\CopyNames"
+$RegPathCopyNamesDir   = "HKCU:\Software\Classes\Directory\shell\CopyNames"
+$AllRegPaths = @($RegPathFile, $RegPathDir, $RegPathBg, $RegPathConvertBg, $RegPathConvertDesktop, $RegPathCopyNamesFile, $RegPathCopyNamesDir)
 
-$PsCmd        = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\copy_mac_path.ps1`""
-$ConvertPsCmd = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\convert_to_pc_path.ps1`""
+$PsCmd          = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\copy_mac_path.ps1`""
+$ConvertPsCmd   = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\convert_to_pc_path.ps1`""
+$CopyNamesPsCmd = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\copy_names.ps1`""
 
 try {
     New-Item -Path "$RegPathFile\command" -Force | Out-Null
@@ -66,6 +70,16 @@ try {
     Set-ItemProperty -Path $RegPathConvertDesktop -Name "(Default)" -Value "Convert to PC Path"
     Set-ItemProperty -Path $RegPathConvertDesktop -Name "Icon"      -Value "shell32.dll,134"
     Set-ItemProperty -Path "$RegPathConvertDesktop\command" -Name "(Default)" -Value $ConvertPsCmd
+
+    New-Item -Path "$RegPathCopyNamesFile\command" -Force | Out-Null
+    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "(Default)" -Value "Copy Names"
+    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "Icon"      -Value "shell32.dll,134"
+    Set-ItemProperty -Path "$RegPathCopyNamesFile\command" -Name "(Default)" -Value "$CopyNamesPsCmd `"%1`""
+
+    New-Item -Path "$RegPathCopyNamesDir\command" -Force | Out-Null
+    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "(Default)" -Value "Copy Names"
+    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "Icon"      -Value "shell32.dll,134"
+    Set-ItemProperty -Path "$RegPathCopyNamesDir\command" -Name "(Default)" -Value "$CopyNamesPsCmd `"%1`""
 } catch {
     Write-Host "Error creating registry entries: $_" -ForegroundColor Red
     Write-Host "Rolling back..." -ForegroundColor Yellow
@@ -122,6 +136,7 @@ Write-Host ""
 Write-Host "Context menu actions:"
 Write-Host "  Copy as Mac Path     Right-click any file or folder"
 Write-Host "  Convert to PC Path   Right-click empty space in a folder or desktop"
+Write-Host "  Copy Names           Right-click selected file(s) or folder(s)"
 Write-Host ""
 Write-Host "Drive mappings: $ConfigFile"
 Write-Host "Edit that file to add or change volume-to-drive-letter mappings."

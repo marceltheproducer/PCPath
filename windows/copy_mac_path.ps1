@@ -22,38 +22,62 @@ if (-not $FilePath) {
     exit 1
 }
 
-# Validate drive-letter path (e.g. C:\..., K:\...)
-if ($FilePath -notmatch '^[A-Za-z]:') {
-    Write-Host "Not a drive-letter path: $FilePath"
-    Write-Host "UNC and relative paths are not supported."
+function Convert-OneToMac {
+    param([string]$P)
+    if ($P -notmatch '^[A-Za-z]:') { return $null }
+    $letter    = $P.Substring(0, 1).ToUpper()
+    $remainder = if ($P.Length -gt 3) { $P.Substring(3) } else { "" }
+    $remainder = $remainder -replace "\\", "/"
+    if ($DriveToVol.ContainsKey($letter)) {
+        $vol = $DriveToVol[$letter]
+        if ($remainder) { return "/Volumes/$vol/$remainder" } else { return "/Volumes/$vol" }
+    } else {
+        if ($remainder) { return "/Volumes/?($letter)/$remainder" } else { return "/Volumes/?($letter)" }
+    }
+}
+
+# If invoked from a multi-file selection, Windows runs this command once per
+# item — only the last clipboard write would survive. To handle multi-select
+# in a single pass we ask Explorer for the current selection that includes
+# the clicked path. If no Explorer match (e.g. invoked on a folder via the
+# Directory shell verb, or from a non-Explorer caller), fall back to the
+# single clicked path.
+function Get-ExplorerSelectionPaths {
+    param([string]$ClickedPath)
+    try {
+        $shell = New-Object -ComObject Shell.Application
+        $clickedFull = [IO.Path]::GetFullPath($ClickedPath)
+        foreach ($w in $shell.Windows()) {
+            try {
+                $doc = $w.Document
+                if (-not $doc) { continue }
+                $sel = $doc.SelectedItems()
+                if (-not $sel -or $sel.Count -eq 0) { continue }
+                $paths = @($sel | ForEach-Object { $_.Path })
+                foreach ($p in $paths) {
+                    if ($p -and ([IO.Path]::GetFullPath($p) -ieq $clickedFull)) {
+                        return ,$paths
+                    }
+                }
+            } catch { continue }
+        }
+    } catch { }
+    return ,@($ClickedPath)
+}
+
+$paths = Get-ExplorerSelectionPaths -ClickedPath $FilePath
+
+$results = New-Object System.Collections.Generic.List[string]
+foreach ($p in $paths) {
+    $mac = Convert-OneToMac -P $p
+    if ($mac) { $results.Add($mac) }
+}
+
+if ($results.Count -eq 0) {
+    Write-Host "No drive-letter paths to convert (UNC and relative paths are not supported)."
     exit 1
 }
 
-# Extract drive letter
-$DriveLetter = $FilePath.Substring(0, 1).ToUpper()
-$Remainder = ""
-if ($FilePath.Length -gt 3) {
-    $Remainder = $FilePath.Substring(3)
-}
-
-# Convert backslashes to forward slashes
-$Remainder = $Remainder -replace "\\", "/"
-
-if ($DriveToVol.ContainsKey($DriveLetter)) {
-    $VolumeName = $DriveToVol[$DriveLetter]
-    if ($Remainder) {
-        $MacPath = "/Volumes/$VolumeName/$Remainder"
-    } else {
-        $MacPath = "/Volumes/$VolumeName"
-    }
-} else {
-    # Unknown drive letter — include letter so user knows which to map
-    if ($Remainder) {
-        $MacPath = "/Volumes/?($DriveLetter)/$Remainder"
-    } else {
-        $MacPath = "/Volumes/?($DriveLetter)"
-    }
-}
-
-$MacPath | Set-Clipboard
-Write-Host "Copied: $MacPath"
+$Output = $results -join "`r`n"
+$Output | Set-Clipboard
+Write-Host "Copied:`n$Output"

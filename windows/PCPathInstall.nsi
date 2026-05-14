@@ -84,6 +84,7 @@ Section "Install"
     File "${__FILEDIR__}\copy_mac_path.ps1"
     File "${__FILEDIR__}\convert_to_pc_path.ps1"
     File "${__FILEDIR__}\copy_names.ps1"
+    File "${__FILEDIR__}\pcpath_launch.vbs"
 
     ; Write version stamp so users can confirm which build is installed
     FileOpen  $0 "$PROFILE\.pcpath\version.txt" w
@@ -117,47 +118,56 @@ Section "Install"
     WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "NoModify"       1
     WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "NoRepair"       1
 
+    ; All verbs go through pcpath_launch.vbs so the PowerShell console is
+    ; fully hidden (no flash). File/folder verbs also set MultiSelectModel
+    ; = Player so Windows invokes the verb once for the whole selection
+    ; instead of once per file.
+
     ; Context menu: Copy as Mac Path — files
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          ""     "Copy as Mac Path"
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\copy_mac_path.ps1" "%1"'
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          ""                 "Copy as Mac Path"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyAsMacPath\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%1"'
 
     ; Context menu: Copy as Mac Path — directories
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          ""     "Copy as Mac Path"
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\copy_mac_path.ps1" "%V"'
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          ""                 "Copy as Mac Path"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyAsMacPath\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%1"'
 
     ; Context menu: Copy as Mac Path — directory background
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          ""     "Copy as Mac Path"
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath"          "Icon" "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\CopyAsMacPath\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\copy_mac_path.ps1" "%V"'
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_mac_path.ps1" "%V"'
 
     ; Context menu: Convert to PC Path — directory background
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          ""     "Convert to PC Path"
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath"          "Icon" "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\Directory\Background\shell\ConvertToPCPath\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
 
     ; Context menu: Convert to PC Path — desktop background
     WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          ""     "Convert to PC Path"
     WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath"          "Icon" "shell32.dll,134"
     WriteRegStr HKCU "Software\Classes\DesktopBackground\shell\ConvertToPCPath\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\convert_to_pc_path.ps1"'
 
     ; Context menu: Copy Names — files
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          ""     "Copy Names"
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\copy_names.ps1" "%1"'
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          ""                 "Copy Names"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\*\shell\CopyNames\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_names.ps1" "%1"'
 
     ; Context menu: Copy Names — directories
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          ""     "Copy Names"
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "Icon" "shell32.dll,134"
-    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames\command"  ""     \
-        'powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "$PROFILE\.pcpath\copy_names.ps1" "%1"'
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          ""                 "Copy Names"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "Icon"             "shell32.dll,134"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames"          "MultiSelectModel" "Player"
+    WriteRegStr HKCU "Software\Classes\Directory\shell\CopyNames\command"  ""                 \
+        'wscript.exe "$PROFILE\.pcpath\pcpath_launch.vbs" "$PROFILE\.pcpath\copy_names.ps1" "%1"'
 
 SectionEnd
 

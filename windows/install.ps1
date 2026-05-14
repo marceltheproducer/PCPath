@@ -29,6 +29,7 @@ Copy-Item "$ScriptDir\pcpath_common.ps1"        "$InstallDir\" -Force
 Copy-Item "$ScriptDir\copy_mac_path.ps1"        "$InstallDir\" -Force
 Copy-Item "$ScriptDir\convert_to_pc_path.ps1"   "$InstallDir\" -Force
 Copy-Item "$ScriptDir\copy_names.ps1"           "$InstallDir\" -Force
+Copy-Item "$ScriptDir\pcpath_launch.vbs"        "$InstallDir\" -Force
 Write-Host "done"
 
 Write-Step "Adding context menu entries..."
@@ -41,20 +42,26 @@ $RegPathCopyNamesFile  = "HKCU:\Software\Classes\*\shell\CopyNames"
 $RegPathCopyNamesDir   = "HKCU:\Software\Classes\Directory\shell\CopyNames"
 $AllRegPaths = @($RegPathFile, $RegPathDir, $RegPathBg, $RegPathConvertBg, $RegPathConvertDesktop, $RegPathCopyNamesFile, $RegPathCopyNamesDir)
 
-$PsCmd          = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\copy_mac_path.ps1`""
-$ConvertPsCmd   = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\convert_to_pc_path.ps1`""
-$CopyNamesPsCmd = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\copy_names.ps1`""
+# All verbs run through a hidden VBScript launcher so there is no visible
+# PowerShell window flash. File/folder verbs also set MultiSelectModel=Player
+# (set below) so Windows fires the verb only once for the whole selection.
+$Launcher       = "wscript.exe `"$InstallDir\pcpath_launch.vbs`""
+$PsCmd          = "$Launcher `"$InstallDir\copy_mac_path.ps1`""
+$ConvertPsCmd   = "$Launcher `"$InstallDir\convert_to_pc_path.ps1`""
+$CopyNamesPsCmd = "$Launcher `"$InstallDir\copy_names.ps1`""
 
 try {
     New-Item -Path "$RegPathFile\command" -Force | Out-Null
-    Set-ItemProperty -Path $RegPathFile -Name "(Default)" -Value "Copy as Mac Path"
-    Set-ItemProperty -Path $RegPathFile -Name "Icon"      -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathFile -Name "(Default)"        -Value "Copy as Mac Path"
+    Set-ItemProperty -Path $RegPathFile -Name "Icon"             -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathFile -Name "MultiSelectModel" -Value "Player"
     Set-ItemProperty -Path "$RegPathFile\command" -Name "(Default)" -Value "$PsCmd `"%1`""
 
     New-Item -Path "$RegPathDir\command" -Force | Out-Null
-    Set-ItemProperty -Path $RegPathDir -Name "(Default)" -Value "Copy as Mac Path"
-    Set-ItemProperty -Path $RegPathDir -Name "Icon"      -Value "shell32.dll,134"
-    Set-ItemProperty -Path "$RegPathDir\command" -Name "(Default)" -Value "$PsCmd `"%V`""
+    Set-ItemProperty -Path $RegPathDir -Name "(Default)"        -Value "Copy as Mac Path"
+    Set-ItemProperty -Path $RegPathDir -Name "Icon"             -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathDir -Name "MultiSelectModel" -Value "Player"
+    Set-ItemProperty -Path "$RegPathDir\command" -Name "(Default)" -Value "$PsCmd `"%1`""
 
     New-Item -Path "$RegPathBg\command" -Force | Out-Null
     Set-ItemProperty -Path $RegPathBg -Name "(Default)" -Value "Copy as Mac Path"
@@ -72,13 +79,15 @@ try {
     Set-ItemProperty -Path "$RegPathConvertDesktop\command" -Name "(Default)" -Value $ConvertPsCmd
 
     New-Item -Path "$RegPathCopyNamesFile\command" -Force | Out-Null
-    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "(Default)" -Value "Copy Names"
-    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "Icon"      -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "(Default)"        -Value "Copy Names"
+    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "Icon"             -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathCopyNamesFile -Name "MultiSelectModel" -Value "Player"
     Set-ItemProperty -Path "$RegPathCopyNamesFile\command" -Name "(Default)" -Value "$CopyNamesPsCmd `"%1`""
 
     New-Item -Path "$RegPathCopyNamesDir\command" -Force | Out-Null
-    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "(Default)" -Value "Copy Names"
-    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "Icon"      -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "(Default)"        -Value "Copy Names"
+    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "Icon"             -Value "shell32.dll,134"
+    Set-ItemProperty -Path $RegPathCopyNamesDir -Name "MultiSelectModel" -Value "Player"
     Set-ItemProperty -Path "$RegPathCopyNamesDir\command" -Name "(Default)" -Value "$CopyNamesPsCmd `"%1`""
 } catch {
     Write-Host "Error creating registry entries: $_" -ForegroundColor Red

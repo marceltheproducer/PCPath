@@ -1,4 +1,4 @@
-; PCPath Installer for Windows
+﻿; PCPath Installer for Windows
 ; Build: makensis windows\PCPathInstall.nsi  (any working directory)
 
 !include "MUI2.nsh"
@@ -7,7 +7,7 @@
 
 ;--------------------------------
 ; Semantic version — bump manually for releases.
-!define PCPATH_VERSION "2.0"
+!define PCPATH_VERSION "2.1"
 
 ; Build stamp — auto-updated every makensis run so you can verify which build
 ; is installed. Format: YYYY.MM.DD.HHMM

@@ -51,7 +51,7 @@ else
 fi
 
 # 3. Quick Action workflows installed
-WORKFLOWS=("Copy as PC Path.workflow" "Convert to Mac Path.workflow")
+WORKFLOWS=("Copy as PC Path.workflow" "Convert to Mac Path.workflow" "Copy Names.workflow")
 all_workflows=true
 for w in "${WORKFLOWS[@]}"; do
     [[ ! -d "$SERVICES_DIR/$w" ]] && all_workflows=false

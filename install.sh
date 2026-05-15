@@ -29,14 +29,22 @@ _step "Copying scripts..."
 cp "$SCRIPT_DIR/pcpath_common.sh" "$INSTALL_DIR/"
 cp "$SCRIPT_DIR/copy_pc_path.sh" "$INSTALL_DIR/"
 cp "$SCRIPT_DIR/paste_mac_path.sh" "$INSTALL_DIR/"
+cp "$SCRIPT_DIR/copy_names.sh" "$INSTALL_DIR/"
 chmod +x "$INSTALL_DIR/pcpath_common.sh"
 chmod +x "$INSTALL_DIR/copy_pc_path.sh"
 chmod +x "$INSTALL_DIR/paste_mac_path.sh"
+chmod +x "$INSTALL_DIR/copy_names.sh"
 echo "done"
 
 _step "Installing Quick Actions..."
+rm -rf "$SERVICES_DIR/Copy as PC Path.workflow"
+rm -rf "$SERVICES_DIR/Convert to Mac Path.workflow"
+rm -rf "$SERVICES_DIR/Copy Names.workflow"
 cp -R "$SCRIPT_DIR/Copy as PC Path.workflow" "$SERVICES_DIR/"
 cp -R "$SCRIPT_DIR/Convert to Mac Path.workflow" "$SERVICES_DIR/"
+cp -R "$SCRIPT_DIR/Copy Names.workflow" "$SERVICES_DIR/"
+# Flush the services database so macOS picks up the new workflows immediately
+/System/Library/CoreServices/pbs -flush 2>/dev/null || true
 echo "done"
 
 _step "Writing config..."
@@ -53,8 +61,19 @@ echo ""
 echo "Action required: enable Quick Actions in System Settings"
 echo "  -> Finder -> check \"Copy as PC Path\" and \"Convert to Mac Path\""
 echo ""
-open "x-apple.systempreferences:com.apple.ExtensionsPreferences" 2>/dev/null || \
-    echo "  (Open System Settings manually -> search for \"Extensions\" -> select Finder)"
+
+_macos_major=$(sw_vers -productVersion | cut -d. -f1)
+if [[ "$_macos_major" -ge 16 ]]; then
+    echo "  macOS Tahoe (16+):"
+    echo "  System Settings -> General -> Login Items & Extensions -> Finder"
+    open "x-apple.systempreferences:com.apple.LoginItems-Settings.extension" 2>/dev/null || \
+        open "x-apple.systempreferences:" 2>/dev/null || true
+else
+    echo "  macOS 15 and earlier:"
+    echo "  System Settings -> Privacy & Security -> Extensions -> Finder"
+    open "x-apple.systempreferences:com.apple.ExtensionsPreferences" 2>/dev/null || \
+        echo "  (Open System Settings manually -> search for \"Extensions\" -> select Finder)"
+fi
 echo ""
 
 # Self-test
@@ -90,6 +109,7 @@ echo ""
 echo "Context menu actions:"
 echo "  Copy as PC Path      Right-click a file or folder in Finder -> Quick Actions"
 echo "  Convert to Mac Path  Right-click a file or folder in Finder -> Quick Actions"
+echo "  Copy Names           Right-click selected file(s) in Finder -> Quick Actions"
 echo ""
 echo "Drive mappings: $CONFIG_FILE"
 echo "Edit that file to add or change volume-to-drive-letter mappings."

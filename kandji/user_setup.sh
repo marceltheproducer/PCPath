@@ -60,5 +60,11 @@ echo "$(date -u +"%Y-%m-%dT%H:%M:%S") PCPath ${CURRENT_VERSION:-unknown} install
 if [[ "$IS_FIRST_INSTALL" == true ]]; then
     # NOTE: display notification is best-effort -- may be silently dropped if
     # Notification Center is not yet ready at first login or if Focus is active.
-    osascript -e 'display notification "In System Settings, search for Extensions and enable PCPath Quick Actions." with title "PCPath Installed"' 2>/dev/null || true
+    _macos_major=$(sw_vers -productVersion | cut -d. -f1)
+    if [[ "$_macos_major" -ge 16 ]]; then
+        _msg="Go to System Settings → General → Login Items & Extensions → Finder to enable PCPath Quick Actions."
+    else
+        _msg="Go to System Settings → Privacy & Security → Extensions → Finder to enable PCPath Quick Actions."
+    fi
+    osascript -e "display notification \"$_msg\" with title \"PCPath Installed\"" 2>/dev/null || true
 fi

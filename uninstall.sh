@@ -9,6 +9,7 @@ echo "Uninstalling PCPath..."
 
 rm -rf "$SERVICES_DIR/Copy as PC Path.workflow"
 rm -rf "$SERVICES_DIR/Convert to Mac Path.workflow"
+rm -rf "$SERVICES_DIR/Copy Names.workflow"
 rm -rf "$INSTALL_DIR"
 
 echo ""

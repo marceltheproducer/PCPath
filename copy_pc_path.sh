@@ -17,10 +17,29 @@ fi
 
 pcpath_load_mappings
 
+if [[ $# -eq 0 ]]; then
+    osascript -e 'display notification "No file received — try right-clicking a file or folder" with title "PCPath"' 2>/dev/null || true
+    exit 0
+fi
+
 convert_path() {
     local mac_path="$1"
     local pc_path=""
     local matched=false
+
+    # Handle paths missing /Volumes/ prefix (e.g. "EDIT/folder/..." → "/Volumes/EDIT/folder/...")
+    if [[ ! "$mac_path" == /Volumes/* ]]; then
+        local check_path="${mac_path#/}"
+        shopt -s nocasematch
+        for i in "${!vol_names[@]}"; do
+            local vol="${vol_names[$i]}"
+            if [[ "$check_path" == "$vol/"* || "$check_path" == "$vol" ]]; then
+                mac_path="/Volumes/$check_path"
+                break
+            fi
+        done
+        shopt -u nocasematch
+    fi
 
     shopt -s nocasematch
     for i in "${!vol_names[@]}"; do
@@ -80,8 +99,21 @@ for f in "$@"; do
 done
 
 if [[ -n "$output" ]]; then
-    if ! printf '%s' "$output" | pbcopy 2>/dev/null; then
-        echo "Warning: Failed to copy to clipboard. Output:" >&2
-        printf '%s\n' "$output" >&2
+    _copied=false
+    if printf '%s' "$output" | pbcopy 2>/dev/null; then
+        _copied=true
+    else
+        # pbcopy can fail in Automator/Quick Action context — fall back to osascript
+        _tmpfile=$(mktemp)
+        printf '%s' "$output" > "$_tmpfile"
+        if osascript -e "set the clipboard to (read POSIX file \"$_tmpfile\")" 2>/dev/null; then
+            _copied=true
+        fi
+        rm -f "$_tmpfile"
+    fi
+    if [[ "$_copied" == true ]]; then
+        osascript -e 'display notification "Path copied to clipboard" with title "PCPath"' 2>/dev/null || true
+    else
+        echo "Warning: Failed to copy to clipboard." >&2
     fi
 fi

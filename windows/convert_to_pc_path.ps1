@@ -35,6 +35,32 @@ $Path -split "`n" | ForEach-Object {
     $Line = $_.Trim()
     if (-not $Line) { return }
 
+    # smb://server/share/rest  ->  /Volumes/share/rest
+    # Handles bare hostnames (smb://calamedia/...) and FQDNs (smb://host.domain.tld/...).
+    # The server segment is dropped — only the share name (== volume name) matters.
+    # URL-decoded so %20 etc. round-trip cleanly.
+    if ($Line -match "^smb://[^/]+/(.*)$") {
+        $Line = "/Volumes/" + [uri]::UnescapeDataString($Matches[1])
+    }
+
+    # Normalize backslash and case variants of /Volumes/ that people sometimes
+    # paste, e.g. \Volumes\X\..., \\Volumes\X\..., /volumes/X/...
+    if ($Line -match '^[\\/]+[Vv]olumes[\\/]') {
+        $Line = $Line -replace '\\', '/'
+        $Line = $Line -replace '^/+[Vv]olumes/', '/Volumes/'
+    }
+
+    # Normalize path missing /Volumes/ prefix (e.g. "EDIT/folder/..." -> "/Volumes/EDIT/folder/...")
+    if ($Line -notmatch "^/Volumes/") {
+        $checkLine = $Line.TrimStart('/')
+        foreach ($volName in $VolToDrive.Keys) {
+            if ($checkLine -match "^$([regex]::Escape($volName))(/|$)") {
+                $Line = "/Volumes/$checkLine"
+                break
+            }
+        }
+    }
+
     if ($Line -match "^/Volumes/([^/]+)(/(.*))?$") {
         $VolName = $Matches[1]
         $Rest = if ($Matches[3]) { $Matches[3] } else { "" }

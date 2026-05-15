@@ -6,10 +6,12 @@
 !include "WordFunc.nsh"
 
 ;--------------------------------
+; Semantic version — bump manually for releases.
+!define PCPATH_VERSION "2.0"
+
 ; Build stamp — auto-updated every makensis run so you can verify which build
 ; is installed. Format: YYYY.MM.DD.HHMM
 !define /date PCPATH_BUILD "%Y.%m.%d.%H%M"
-!define PCPATH_VERSION    "${PCPATH_BUILD}"
 
 ;--------------------------------
 ; Metadata
@@ -18,12 +20,12 @@ OutFile "${__FILEDIR__}\PCPathInstall.exe"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 Unicode True
-BrandingText "PCPath ${PCPATH_VERSION}"
+BrandingText "PCPath ${PCPATH_VERSION}  (build ${PCPATH_BUILD})"
 
-VIProductVersion "0.0.0.0"
+VIProductVersion "2.0.0.0"
 VIAddVersionKey  "ProductName"     "PCPath"
-VIAddVersionKey  "ProductVersion"  "${PCPATH_VERSION}"
-VIAddVersionKey  "FileVersion"     "${PCPATH_VERSION}"
+VIAddVersionKey  "ProductVersion"  "${PCPATH_VERSION} (${PCPATH_BUILD})"
+VIAddVersionKey  "FileVersion"     "${PCPATH_VERSION} (${PCPATH_BUILD})"
 VIAddVersionKey  "FileDescription" "PCPath Installer"
 VIAddVersionKey  "CompanyName"     "CREATE"
 VIAddVersionKey  "LegalCopyright"  "CREATE"
@@ -38,7 +40,7 @@ Var IsUpdate
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE "PCPath ${PCPATH_VERSION} Installed"
-!define MUI_FINISHPAGE_TEXT "PCPath build ${PCPATH_BUILD} is now active.$\r$\n$\r$\nContext menu actions (grouped at top of right-click menu):$\r$\n  - Copy as Mac Path  (file or folder)$\r$\n  - Copy as Path  (file or folder, Windows path)$\r$\n  - Copy Names  (file or folder)$\r$\n  - Convert to PC Path  (empty space or desktop)$\r$\n$\r$\nDrive mappings: $PROFILE\.pcpath_mappings$\r$\nInstall log: $PROFILE\.pcpath\install.log"
+!define MUI_FINISHPAGE_TEXT "PCPath ${PCPATH_VERSION} (build ${PCPATH_BUILD}) is now active.$\r$\n$\r$\nContext menu actions (grouped at top of right-click menu):$\r$\n  - Copy as Mac Path  (file or folder)$\r$\n  - Copy as Path  (file or folder, Windows path)$\r$\n  - Copy Names  (file or folder)$\r$\n  - Convert to PC Path  (empty space or desktop)$\r$\n$\r$\nDrive mappings: $PROFILE\.pcpath_mappings$\r$\nInstall log: $PROFILE\.pcpath\install.log"
 
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -69,7 +71,7 @@ FunctionEnd
 Section "Install"
 
     ${If} $IsUpdate == "1"
-        DetailPrint "Updating PCPath: $PreviousVersion -> ${PCPATH_VERSION}"
+        DetailPrint "Updating PCPath: $PreviousVersion -> ${PCPATH_VERSION} (build ${PCPATH_BUILD})"
         ; Clean stale scripts so a leftover file from a previous build can't
         ; shadow renamed/removed scripts. Config and uninstall.exe are kept.
         Delete "$PROFILE\.pcpath\*.ps1"
@@ -89,16 +91,16 @@ Section "Install"
 
     ; Write version stamp so users can confirm which build is installed
     FileOpen  $0 "$PROFILE\.pcpath\version.txt" w
-    FileWrite $0 "${PCPATH_VERSION}$\r$\nbuild ${PCPATH_BUILD}$\r$\n"
+    FileWrite $0 "PCPath ${PCPATH_VERSION}$\r$\nbuild ${PCPATH_BUILD}$\r$\n"
     FileClose $0
 
     ; Append a line to the install log
     FileOpen  $0 "$PROFILE\.pcpath\install.log" a
     FileSeek  $0 0 END
     ${If} $IsUpdate == "1"
-        FileWrite $0 "${PCPATH_BUILD}  update from $PreviousVersion to ${PCPATH_VERSION}$\r$\n"
+        FileWrite $0 "${PCPATH_BUILD}  update from $PreviousVersion to ${PCPATH_VERSION} (build ${PCPATH_BUILD})$\r$\n"
     ${Else}
-        FileWrite $0 "${PCPATH_BUILD}  install ${PCPATH_VERSION}$\r$\n"
+        FileWrite $0 "${PCPATH_BUILD}  install ${PCPATH_VERSION} (build ${PCPATH_BUILD})$\r$\n"
     ${EndIf}
     FileClose $0
 
@@ -111,8 +113,8 @@ Section "Install"
 
     ; Register uninstaller in Add/Remove Programs (HKCU works on Windows 8+)
     WriteUninstaller "$PROFILE\.pcpath\uninstall.exe"
-    WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "DisplayName"     "PCPath"
-    WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "DisplayVersion"  "${PCPATH_VERSION}"
+    WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "DisplayName"     "PCPath ${PCPATH_VERSION}"
+    WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "DisplayVersion"  "${PCPATH_VERSION} (${PCPATH_BUILD})"
     WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "UninstallString" '"$PROFILE\.pcpath\uninstall.exe"'
     WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "DisplayIcon"     "shell32.dll,134"
     WriteRegStr  HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PCPath" "Publisher"       "CREATE"

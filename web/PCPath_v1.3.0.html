@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PCPath — Path Converter</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0f0f'/%3E%3Ctext x='16' y='14' text-anchor='middle' font-family='system-ui,sans-serif' font-size='13' font-weight='800' fill='%23a8dadc'%3E/%3C/text%3E%3Ctext x='16' y='27' text-anchor='middle' font-family='system-ui,sans-serif' font-size='13' font-weight='800' fill='%23f4a261'%3E%5C%3C/text%3E%3C/svg%3E">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -487,7 +488,7 @@
   </div>
 </div>
 
-<h1>PCPath <span class="version">v1.2.0</span></h1>
+<h1>PCPath <span class="version">v1.3.0</span></h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
 
 <div class="auto-copy-feedback" id="auto-copy-feedback">✓ Auto-copied!</div>
@@ -554,6 +555,24 @@ let mappings = loadMappings();
 
 // --- Detection ---
 
+// Normalize Mac-side path variants so the rest of the pipeline only sees
+// canonical /Volumes/<name>/... paths.
+//   smb://server/share/rest   (bare hostname or FQDN, URL-encoded ok)
+//   \Volumes\X\..., \\Volumes\X\..., /volumes/X/...  (any case + slash style)
+function normalizeMacLike(line) {
+  const smb = line.match(/^smb:\/\/[^/]+\/(.*)$/i);
+  if (smb) {
+    let rest;
+    try { rest = decodeURIComponent(smb[1]); }
+    catch { rest = smb[1]; }
+    return "/Volumes/" + rest;
+  }
+  if (/^[\\/]+volumes[\\/]/i.test(line)) {
+    return line.replace(/\\/g, "/").replace(/^\/+volumes\//i, "/Volumes/");
+  }
+  return line;
+}
+
 function detectType(path) {
   const trimmed = path.trim();
   if (!trimmed) return "unknown";
@@ -618,9 +637,10 @@ function pcToMac(pcPath) {
 
 function convert(input) {
   return input.split("\n").map(raw => {
-    const line = raw.trim();
-    if (!line) return "";
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
 
+    const line = normalizeMacLike(trimmed);
     const type = detectType(line);
     return type === "pc" ? pcToMac(line) :
            type === "mac" ? macToPC(line) :

@@ -23,6 +23,45 @@ convert_to_mac() {
     local mac_path=""
     local matched=false
 
+    # smb://server/share/rest  ->  /Volumes/share/rest
+    # Hostname (bare or FQDN) is dropped; share is the volume name. URL-decoded
+    # so %20 etc. round-trip cleanly.
+    # Bash regex must be stored in a variable for backslash char classes to work.
+    local re_smb='^[Ss][Mm][Bb]://[^/]+/(.*)$'
+    if [[ "$pc_path" =~ $re_smb ]]; then
+        local rest="${BASH_REMATCH[1]}"
+        rest="${rest//+/ }"
+        # URL-decode %HH using a self-contained loop so we don't depend on
+        # python/perl and don't risk printf format-string interpretation.
+        local decoded="" i=0 len=${#rest} c hex byte
+        while (( i < len )); do
+            c="${rest:i:1}"
+            if [[ "$c" == "%" && $((i + 2)) -lt $len ]]; then
+                hex="${rest:i+1:2}"
+                if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
+                    printf -v byte '\x'"$hex"
+                    decoded+="$byte"
+                    (( i += 3 ))
+                    continue
+                fi
+            fi
+            decoded+="$c"
+            (( i++ ))
+        done
+        printf '%s' "/Volumes/$decoded"
+        return
+    fi
+
+    # \Volumes\X\..., \\Volumes\X\..., /volumes/X/... (any case + slash mix)
+    # -> canonical /Volumes/X/... — caught before the UNC reject below.
+    local re_vol='^[\/\\]+[Vv]olumes[\/\\]'
+    if [[ "$pc_path" =~ $re_vol ]]; then
+        local norm="${pc_path//\\//}"
+        norm="$(printf '%s' "$norm" | sed -E 's|^/+[Vv]olumes/|/Volumes/|')"
+        printf '%s' "$norm"
+        return
+    fi
+
     # Reject UNC paths (\\server\share) — not supported
     if [[ "$pc_path" == \\\\* || "$pc_path" == //* ]]; then
         echo "Warning: UNC path not supported: $pc_path (use a mapped drive letter instead)" >&2
@@ -62,8 +101,21 @@ convert_to_mac() {
             fi
         fi
     else
-        # Not a drive-letter path, just normalize slashes
+        # Not a drive-letter path, normalize slashes
         mac_path="$pc_path"
+        # Handle paths missing /Volumes/ prefix (e.g. "EDIT/folder/..." → "/Volumes/EDIT/folder/...")
+        if [[ ! "$mac_path" == /Volumes/* ]]; then
+            local check_path="${mac_path#/}"
+            shopt -s nocasematch
+            for i in "${!vol_names[@]}"; do
+                local vol="${vol_names[$i]}"
+                if [[ "$check_path" == "$vol/"* || "$check_path" == "$vol" ]]; then
+                    mac_path="/Volumes/$check_path"
+                    break
+                fi
+            done
+            shopt -u nocasematch
+        fi
     fi
 
     printf '%s' "$mac_path"
@@ -75,8 +127,12 @@ if [[ $# -gt 0 ]]; then
 elif [[ ! -t 0 ]]; then
     input=$(cat)
 else
-    if ! input=$(pbpaste 2>/dev/null); then
-        echo "Error: Failed to read from clipboard (pbpaste unavailable)." >&2
+    if ! input=$(pbpaste 2>/dev/null) || [[ -z "$input" ]]; then
+        # pbpaste can fail in Automator/Quick Action context — fall back to osascript
+        input=$(osascript -e 'get the clipboard' 2>/dev/null) || true
+    fi
+    if [[ -z "$input" ]]; then
+        echo "Error: Failed to read from clipboard." >&2
         exit 1
     fi
 fi
@@ -97,7 +153,21 @@ while IFS= read -r line; do
 done <<< "$input"
 
 if [[ -n "$output" ]]; then
-    if ! printf '%s' "$output" | pbcopy 2>/dev/null; then
+    _copied=false
+    if printf '%s' "$output" | pbcopy 2>/dev/null; then
+        _copied=true
+    else
+        # pbcopy can fail in Automator/Quick Action context — fall back to osascript
+        _tmpfile=$(mktemp)
+        printf '%s' "$output" > "$_tmpfile"
+        if osascript -e "set the clipboard to (read POSIX file \"$_tmpfile\")" 2>/dev/null; then
+            _copied=true
+        fi
+        rm -f "$_tmpfile"
+    fi
+    if [[ "$_copied" == true ]]; then
+        osascript -e 'display notification "Path copied to clipboard" with title "PCPath"' 2>/dev/null || true
+    else
         echo "Warning: Failed to copy to clipboard." >&2
     fi
     printf '%s' "$output"

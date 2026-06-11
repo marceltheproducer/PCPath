@@ -33,7 +33,12 @@ function Convert-OneToMac {
         $vol = $DriveToVol[$letter]
         $res = if ($remainder) { "/Volumes/$vol/$remainder" } else { "/Volumes/$vol" }
     } else {
-        $res = if ($remainder) { "/Volumes/?($letter)/$remainder" } else { "/Volumes/?($letter)" }
+        $disc = Resolve-VolumeFallback -Name $letter -Direction 'LetterToVol'
+        if ($disc) {
+            $res = if ($remainder) { "/Volumes/$disc/$remainder" } else { "/Volumes/$disc" }
+        } else {
+            $res = if ($remainder) { "/Volumes/?($letter)/$remainder" } else { "/Volumes/?($letter)" }
+        }
     }
     return (Remove-SegmentSuffixes $res $StripSuffixes)
 }

@@ -71,8 +71,13 @@ $Path -split "`n" | ForEach-Object {
             $Drive = $VolToDrive[$VolName]
             $ResultList.Add((Remove-SegmentSuffixes ($Drive + ':' + '\' + $Rest) $StripSuffixes))
         } else {
-            # Unknown volume — include name so user knows which to map
-            $ResultList.Add((Remove-SegmentSuffixes ('?(' + $VolName + '):\' + $Rest) $StripSuffixes))
+            $Discovered = Resolve-VolumeFallback -Name $VolName -Direction 'VolToLetter'
+            if ($Discovered) {
+                $ResultList.Add((Remove-SegmentSuffixes ($Discovered + ':' + '\' + $Rest) $StripSuffixes))
+            } else {
+                # Unknown volume — include name so user knows which to map
+                $ResultList.Add((Remove-SegmentSuffixes ('?(' + $VolName + '):\' + $Rest) $StripSuffixes))
+            }
         }
     } else {
         # Not a /Volumes/ path, just swap slashes

@@ -50,5 +50,19 @@ $o2raw = (& "$Root\windows\copy_mac_path.ps1" 'E:\MONA_Moana_LA\TO GFX\f.mp4' 6>
 $o2 = ($o2raw | Where-Object { $_ -like '*Volumes*' } | Select-Object -First 1) -replace '^Copied:\s*', ''
 Assert-Eq $o2.Trim() '/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4' "win e2e: PC->Mac suffix+space"
 
+# Auto-discovery with an injected fake volume list.
+$fake = @(
+  [pscustomobject]@{ DriveLetter = 'E'; FileSystemLabel = 'EDIT' },
+  [pscustomobject]@{ DriveLetter = 'F'; FileSystemLabel = 'MONA' },
+  [pscustomobject]@{ DriveLetter = 'G'; FileSystemLabel = '' }
+)
+# Volume name -> letter
+Assert-Eq (Resolve-VolumeFallback -Name 'MONA' -Direction 'VolToLetter' -Volumes $fake) 'F' "win: discover letter from label"
+Assert-Eq (Resolve-VolumeFallback -Name 'mona' -Direction 'VolToLetter' -Volumes $fake) 'F' "win: label match case-insensitive"
+Assert-Eq (Resolve-VolumeFallback -Name 'NOPE' -Direction 'VolToLetter' -Volumes $fake) $null "win: unknown label -> null"
+# Letter -> volume name
+Assert-Eq (Resolve-VolumeFallback -Name 'E' -Direction 'LetterToVol' -Volumes $fake) 'EDIT' "win: discover label from letter"
+Assert-Eq (Resolve-VolumeFallback -Name 'G' -Direction 'LetterToVol' -Volumes $fake) $null "win: unlabeled drive -> null"
+
 Write-Host "`n$script:Fails failure(s)"
 if ($script:Fails -gt 0) { exit 1 } else { exit 0 }

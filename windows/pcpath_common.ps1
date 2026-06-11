@@ -86,3 +86,26 @@ function Remove-SegmentSuffixes {
         return $seg
     })
 }
+
+function Get-LiveVolumeMap {
+    try { return @(Get-Volume | Where-Object { $_.DriveLetter -and $_.FileSystemLabel }) }
+    catch { return @() }
+}
+
+function Resolve-VolumeFallback {
+    param(
+        [string]$Name,
+        [ValidateSet('VolToLetter', 'LetterToVol')] [string]$Direction,
+        [array]$Volumes
+    )
+    if ($null -eq $Volumes) { $Volumes = Get-LiveVolumeMap }
+    foreach ($v in $Volumes) {
+        if (-not $v.DriveLetter -or -not $v.FileSystemLabel) { continue }
+        if ($Direction -eq 'VolToLetter') {
+            if ($v.FileSystemLabel -ieq $Name) { return ([string]$v.DriveLetter).ToUpper() }
+        } else {
+            if (([string]$v.DriveLetter).ToUpper() -eq $Name.ToUpper()) { return [string]$v.FileSystemLabel }
+        }
+    }
+    return $null
+}

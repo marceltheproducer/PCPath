@@ -20,10 +20,7 @@ const ctx = { mappings: [{ vol: "EDIT", letter: "E" }], stripSuffixes: [] };
 function load(...names) {
   const src = names.map(grab).join("\n");
   // eslint-disable-next-line no-new-func
-  return new Function(...Object.keys(ctx), src + "\nreturn {normalizeMacLike,detectType,macToPC,pcToMac" +
-    (src.includes("function stripWrappingQuotes") ? ",stripWrappingQuotes" : "") +
-    (src.includes("function stripSegmentSuffixes") ? ",stripSegmentSuffixes" : "") +
-    "};")(...Object.values(ctx));
+  return new Function(...Object.keys(ctx), src + "\nreturn {" + names.join(",") + "};")(...Object.values(ctx));
 }
 
 let failures = 0;
@@ -39,6 +36,15 @@ function eq(actual, expected, label) {
   const input = "/Volumes/EDIT/EastofEden_ESED/Media/GFX/TO GFX/20260610/tim_edt_trl_Beauty_v5_wip04_wm.mp4".replace(/[/]/g, bs);
   const line = fns.normalizeMacLike(input.trim());
   eq(fns.macToPC(line), "E:" + bs + "EastofEden_ESED" + bs + "Media" + bs + "GFX" + bs + "TO GFX" + bs + "20260610" + bs + "tim_edt_trl_Beauty_v5_wip04_wm.mp4", "web: space + filename preserved");
+}
+
+// --- Quote stripping ---
+{
+  const fns = load("stripWrappingQuotes");
+  eq(fns.stripWrappingQuotes('"E:\\Project\\comp.aep"'), 'E:\\Project\\comp.aep', "web: strips double quotes");
+  eq(fns.stripWrappingQuotes("'/Volumes/EDIT/x'"), "/Volumes/EDIT/x", "web: strips single quotes");
+  eq(fns.stripWrappingQuotes('/Volumes/EDIT/TO GFX/f'), '/Volumes/EDIT/TO GFX/f', "web: leaves unquoted untouched");
+  eq(fns.stripWrappingQuotes('"mismatch\''), '"mismatch\'', "web: leaves mismatched quotes");
 }
 
 export { html, grab, load, eq };

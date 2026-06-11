@@ -553,6 +553,14 @@ function saveMappings(mappings) {
 
 let mappings = loadMappings();
 
+function stripWrappingQuotes(s) {
+  if (s.length >= 2) {
+    const f = s[0], l = s[s.length - 1];
+    if ((f === '"' && l === '"') || (f === "'" && l === "'")) return s.slice(1, -1);
+  }
+  return s;
+}
+
 // --- Detection ---
 
 // Normalize Mac-side path variants so the rest of the pipeline only sees
@@ -637,7 +645,7 @@ function pcToMac(pcPath) {
 
 function convert(input) {
   return input.split("\n").map(raw => {
-    const trimmed = raw.trim();
+    const trimmed = stripWrappingQuotes(raw.trim());
     if (!trimmed) return "";
 
     const line = normalizeMacLike(trimmed);

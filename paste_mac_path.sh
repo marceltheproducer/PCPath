@@ -48,7 +48,7 @@ convert_to_mac() {
             decoded+="$c"
             (( i++ ))
         done
-        printf '%s' "/Volumes/$decoded"
+        printf '%s' "$(strip_segment_suffixes "/Volumes/$decoded")"
         return
     fi
 
@@ -58,7 +58,7 @@ convert_to_mac() {
     if [[ "$pc_path" =~ $re_vol ]]; then
         local norm="${pc_path//\\//}"
         norm="$(printf '%s' "$norm" | sed -E 's|^/+[Vv]olumes/|/Volumes/|')"
-        printf '%s' "$norm"
+        printf '%s' "$(strip_segment_suffixes "$norm")"
         return
     fi
 
@@ -118,7 +118,7 @@ convert_to_mac() {
         fi
     fi
 
-    printf '%s' "$mac_path"
+    printf '%s' "$(strip_segment_suffixes "$mac_path")"
 }
 
 # Read input from arguments, stdin, or clipboard
@@ -143,6 +143,7 @@ while IFS= read -r line; do
     # Trim leading/trailing whitespace
     line="${line#"${line%%[![:space:]]*}"}"
     line="${line%"${line##*[![:space:]]}"}"
+    line="$(strip_wrapping_quotes "$line")"
     [[ -z "$line" ]] && continue
     converted="$(convert_to_mac "$line")"
     if [[ -n "$output" ]]; then

@@ -51,5 +51,23 @@ eq "$(strip_segment_suffixes '/Volumes/EDIT/Proj_NY/Proj_LA')" '/Volumes/EDIT/Pr
 printf 'EDIT=E\nCONTENT=K\n' > "$SHIM/.pcpath_mappings"
 pcpath_load_mappings
 
+# --- End-to-end wiring ---
+# PC->Mac: quoted input + suffix + space, using an UNmapped letter (Z) so the
+# placeholder path is exercised (EDIT=E in config means E is already mapped).
+out="$(bash "$ROOT/paste_mac_path.sh" '"Z:\MONA_Moana_LA\TO GFX\f.mp4"' 2>/dev/null)"
+eq "$out" "/Volumes/?(Z)/MONA_Moana/TO GFX/f.mp4" "shell e2e: PC->Mac quote+suffix (unmapped Z)"
+
+# PC->Mac with mapped drive (EDIT=E)
+out="$(bash "$ROOT/paste_mac_path.sh" 'E:\MONA_Moana_LA\shots' 2>/dev/null)"
+eq "$out" "/Volumes/EDIT/MONA_Moana/shots" "shell e2e: PC->Mac suffix on mapped drive"
+
+# \Volumes\ form keeps space, strips suffix
+out="$(bash "$ROOT/paste_mac_path.sh" '\Volumes\EDIT\MONA_Moana_LA\TO GFX\f.mp4' 2>/dev/null)"
+eq "$out" "/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4" "shell e2e: \\Volumes\\ suffix + space"
+
+# Mac->PC: suffix strip, space kept
+bash "$ROOT/copy_pc_path.sh" "/Volumes/EDIT/MONA_Moana_LA/TO GFX/f.mp4" >/dev/null 2>&1
+eq "$(clip)" 'E:\MONA_Moana\TO GFX\f.mp4' "shell e2e: Mac->PC suffix + space"
+
 printf '\n%d failure(s)\n' "$FAILS"
 exit $(( FAILS > 0 ? 1 : 0 ))

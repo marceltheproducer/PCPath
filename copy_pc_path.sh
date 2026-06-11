@@ -82,6 +82,7 @@ convert_path() {
     fi
 
     # Replace forward slashes with backslashes
+    pc_path="$(strip_segment_suffixes "$pc_path")"
     pc_path="${pc_path//\//\\}"
 
     printf '%s' "$pc_path"

@@ -41,3 +41,48 @@ THE_NETWORK=N
 
     return $Map
 }
+
+function Get-PCPathStripSuffixes {
+    $ConfigFile = "$env:USERPROFILE\.pcpath_mappings"
+    $suffixes = New-Object System.Collections.Generic.List[string]
+    $configured = $false
+    if (Test-Path $ConfigFile) {
+        foreach ($raw in (Get-Content $ConfigFile -Encoding UTF8)) {
+            $line = $raw.Trim()
+            if (-not $line -or $line.StartsWith('#')) { continue }
+            if ($line -match '^[Ss][Tt][Rr][Ii][Pp]\s*=(.*)$') {
+                $configured = $true
+                $val = $Matches[1].Trim()
+                if ($val) { $suffixes.Add($val) }
+            }
+        }
+    }
+    if (-not $configured) { return ,@('_LA') }
+    return ,$suffixes.ToArray()
+}
+
+function Remove-WrappingQuotes {
+    param([string]$s)
+    if ($s.Length -ge 2) {
+        $f = $s[0]; $l = $s[$s.Length - 1]
+        if (($f -eq '"' -and $l -eq '"') -or ($f -eq "'" -and $l -eq "'")) {
+            return $s.Substring(1, $s.Length - 2)
+        }
+    }
+    return $s
+}
+
+function Remove-SegmentSuffixes {
+    param([string]$Path, [string[]]$Suffixes)
+    if (-not $Suffixes -or $Suffixes.Count -eq 0) { return $Path }
+    return [regex]::Replace($Path, '[^\\/]+', {
+        param($m)
+        $seg = $m.Value
+        foreach ($suf in $Suffixes) {
+            if ($suf -and $seg.Length -gt $suf.Length -and $seg.EndsWith($suf, [System.StringComparison]::Ordinal)) {
+                return $seg.Substring(0, $seg.Length - $suf.Length)
+            }
+        }
+        return $seg
+    })
+}

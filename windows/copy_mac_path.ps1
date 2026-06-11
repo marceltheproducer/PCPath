@@ -15,6 +15,7 @@ $CommonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "pcpat
 . $CommonPath
 
 $DriveToVol = Get-PCPathMappings -DriveToVolume
+$StripSuffixes = Get-PCPathStripSuffixes
 
 if (-not $FilePath) {
     Write-Host "Usage: copy_mac_path.ps1 <file-path>"
@@ -30,10 +31,11 @@ function Convert-OneToMac {
     $remainder = $remainder -replace "\\", "/"
     if ($DriveToVol.ContainsKey($letter)) {
         $vol = $DriveToVol[$letter]
-        if ($remainder) { return "/Volumes/$vol/$remainder" } else { return "/Volumes/$vol" }
+        $res = if ($remainder) { "/Volumes/$vol/$remainder" } else { "/Volumes/$vol" }
     } else {
-        if ($remainder) { return "/Volumes/?($letter)/$remainder" } else { return "/Volumes/?($letter)" }
+        $res = if ($remainder) { "/Volumes/?($letter)/$remainder" } else { "/Volumes/?($letter)" }
     }
+    return (Remove-SegmentSuffixes $res $StripSuffixes)
 }
 
 # If invoked from a multi-file selection, Windows runs this command once per

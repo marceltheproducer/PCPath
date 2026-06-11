@@ -41,5 +41,14 @@ Set-Content -Path (Join-Path $tmp ".pcpath_mappings") -Value "EDIT=E`nSTRIP=_NY"
 Assert-Eq ((Get-PCPathStripSuffixes) -join ',') '_NY' "win: STRIP= replaces default"
 Set-Content -Path (Join-Path $tmp ".pcpath_mappings") -Value "EDIT=E`nCONTENT=K" -Encoding UTF8
 
+# Mac->PC quoted input + suffix + space
+$o = (& "$Root\windows\convert_to_pc_path.ps1" '"/Volumes/EDIT/MONA_Moana_LA/TO GFX/f.mp4"' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $o 'E:\MONA_Moana\TO GFX\f.mp4' "win e2e: Mac->PC quote+suffix+space"
+
+# PC->Mac (copy_mac_path) suffix + space
+$o2raw = (& "$Root\windows\copy_mac_path.ps1" 'E:\MONA_Moana_LA\TO GFX\f.mp4' 6>&1 | ForEach-Object { $_.ToString() })
+$o2 = ($o2raw | Where-Object { $_ -like '*Volumes*' } | Select-Object -First 1) -replace '^Copied:\s*', ''
+Assert-Eq $o2.Trim() '/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4' "win e2e: PC->Mac suffix+space"
+
 Write-Host "`n$script:Fails failure(s)"
 if ($script:Fails -gt 0) { exit 1 } else { exit 0 }

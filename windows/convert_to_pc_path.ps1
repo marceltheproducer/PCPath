@@ -19,6 +19,7 @@ $CommonPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "pcpat
 . $CommonPath
 
 $VolToDrive = Get-PCPathMappings
+$StripSuffixes = Get-PCPathStripSuffixes
 
 # Get path from argument or clipboard
 if (-not $Path) {
@@ -32,7 +33,7 @@ if (-not $Path) {
 # Convert each line separately (handles multiline clipboard)
 $ResultList = [System.Collections.Generic.List[string]]::new()
 $Path -split "`n" | ForEach-Object {
-    $Line = $_.Trim()
+    $Line = Remove-WrappingQuotes ($_.Trim())
     if (-not $Line) { return }
 
     # smb://server/share/rest  ->  /Volumes/share/rest
@@ -68,14 +69,14 @@ $Path -split "`n" | ForEach-Object {
 
         if ($VolToDrive.ContainsKey($VolName)) {
             $Drive = $VolToDrive[$VolName]
-            $ResultList.Add($Drive + ':' + '\' + $Rest)
+            $ResultList.Add((Remove-SegmentSuffixes ($Drive + ':' + '\' + $Rest) $StripSuffixes))
         } else {
             # Unknown volume — include name so user knows which to map
-            $ResultList.Add('?(' + $VolName + '):\' + $Rest)
+            $ResultList.Add((Remove-SegmentSuffixes ('?(' + $VolName + '):\' + $Rest) $StripSuffixes))
         }
     } else {
         # Not a /Volumes/ path, just swap slashes
-        $ResultList.Add(($Line -replace '/', '\'))
+        $ResultList.Add((Remove-SegmentSuffixes ($Line -replace '/', '\') $StripSuffixes))
     }
 }
 

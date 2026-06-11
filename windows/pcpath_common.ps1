@@ -57,6 +57,7 @@ function Get-PCPathStripSuffixes {
             }
         }
     }
+    # $configured stays true even if all STRIP= values are empty -> returns @(), disabling stripping
     if (-not $configured) { return ,@('_LA') }
     return ,$suffixes.ToArray()
 }

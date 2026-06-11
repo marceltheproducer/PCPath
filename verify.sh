@@ -94,6 +94,15 @@ if [[ -x "$INSTALL_DIR/pcpath_common.sh" ]]; then
     fi
 fi
 
+# 7. Unit/regression tests (if the tests dir is present)
+if [[ -f "$INSTALL_DIR/tests/run_shell.sh" ]]; then
+    if bash "$INSTALL_DIR/tests/run_shell.sh" >/dev/null 2>&1; then
+        _pass "Shell regression tests passed"
+    else
+        _fail "Shell regression tests failed (run: bash $INSTALL_DIR/tests/run_shell.sh)"
+    fi
+fi
+
 printf "\n"
 if [[ "$FAIL" -gt 0 ]]; then
     printf "%d issue(s) found. See above.\n" "$FAIL"

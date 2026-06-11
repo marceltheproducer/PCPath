@@ -10,6 +10,11 @@ GFX=G
 EDIT=E
 THE_NETWORK=N"
 
+# Config file format (~/.pcpath_mappings), one directive per line:
+#   VOLUME=LETTER   e.g.  EDIT=E
+#   STRIP=SUFFIX    e.g.  STRIP=_LA   (strips that suffix from folder names;
+#                   any STRIP= line replaces the built-in _LA default)
+
 # Loads volume-to-drive-letter mappings into vol_names[] and drive_letters[]
 pcpath_load_mappings() {
     vol_names=()

@@ -28,5 +28,28 @@ eq "$out" "/Volumes/EDIT/EastofEden_ESED/Media/GFX/TO GFX/20260610/tim_edt_trl_B
 bash "$ROOT/copy_pc_path.sh" "/Volumes/EDIT/EastofEden_ESED/Media/GFX/TO GFX/20260610/tim_edt_trl_Beauty_v5_wip04_wm.mp4" >/dev/null 2>&1
 eq "$(clip)" 'E:\EastofEden_ESED\Media\GFX\TO GFX\20260610\tim_edt_trl_Beauty_v5_wip04_wm.mp4' "shell: Mac->PC space + filename preserved"
 
+# --- Common helpers (sourced) ---
+source "$ROOT/pcpath_common.sh"
+
+# Quote stripping
+eq "$(strip_wrapping_quotes '"E:\foo"')" 'E:\foo' "shell: strip double quotes"
+eq "$(strip_wrapping_quotes "'/Volumes/EDIT/x'")" "/Volumes/EDIT/x" "shell: strip single quotes"
+eq "$(strip_wrapping_quotes '/Volumes/EDIT/TO GFX/f')" '/Volumes/EDIT/TO GFX/f' "shell: unquoted untouched"
+eq "$(strip_wrapping_quotes '"mismatch'"'"'')" '"mismatch'"'"'' "shell: mismatched untouched"
+
+# Suffix stripping (default _LA from no STRIP= in config)
+pcpath_load_mappings
+eq "$(strip_segment_suffixes 'E:/MONA_Moana_LA/shots/010')" 'E:/MONA_Moana/shots/010' "shell: strip _LA default"
+eq "$(strip_segment_suffixes '/Volumes/EDIT/TO GFX_LA/x')" '/Volumes/EDIT/TO GFX/x' "shell: keep space strip suffix"
+eq "$(strip_segment_suffixes '/Volumes/EDIT/TO GFX/x')" '/Volumes/EDIT/TO GFX/x' "shell: no tag unchanged"
+eq "$(strip_segment_suffixes '/Volumes/EDIT/_LA/x')" '/Volumes/EDIT/_LA/x' "shell: never empties segment"
+
+# Explicit STRIP= replaces default
+printf 'EDIT=E\nSTRIP=_NY\n' > "$SHIM/.pcpath_mappings"
+pcpath_load_mappings
+eq "$(strip_segment_suffixes '/Volumes/EDIT/Proj_NY/Proj_LA')" '/Volumes/EDIT/Proj/Proj_LA' "shell: STRIP= replaces default (_NY only)"
+printf 'EDIT=E\nCONTENT=K\n' > "$SHIM/.pcpath_mappings"
+pcpath_load_mappings
+
 printf '\n%d failure(s)\n' "$FAILS"
 exit $(( FAILS > 0 ? 1 : 0 ))

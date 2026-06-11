@@ -14,6 +14,8 @@ THE_NETWORK=N"
 pcpath_load_mappings() {
     vol_names=()
     drive_letters=()
+    strip_suffixes=()
+    local _strip_configured=false
 
     local config_data="$PCPATH_DEFAULTS"
     if [[ -f "$PCPATH_CONFIG" ]]; then
@@ -29,6 +31,15 @@ pcpath_load_mappings() {
         line="${line//$'\r'/}"
         # Skip comments and empty lines
         [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        # STRIP=<suffix> directive (case-insensitive key)
+        if [[ "$line" =~ ^[[:space:]]*[Ss][Tt][Rr][Ii][Pp][[:space:]]*= ]]; then
+            local suf="${line#*=}"
+            suf="${suf#"${suf%%[![:space:]]*}"}"
+            suf="${suf%"${suf##*[![:space:]]}"}"
+            _strip_configured=true
+            [[ -n "$suf" ]] && strip_suffixes+=("$suf")
+            continue
+        fi
         # Split on first =
         local vol="${line%%=*}"
         local letter="${line#*=}"
@@ -44,4 +55,47 @@ pcpath_load_mappings() {
         vol_names+=("$vol")
         drive_letters+=("$letter")
     done <<< "$config_data"
+    # Default suffix when none configured.
+    if [[ "$_strip_configured" == false ]]; then
+        strip_suffixes=("_LA")
+    fi
+}
+
+# Remove one layer of matching wrapping quotes (" or ').
+strip_wrapping_quotes() {
+    local s="$1"
+    if [[ ${#s} -ge 2 ]]; then
+        local f="${s:0:1}" l="${s: -1}"
+        if [[ ( "$f" == '"' && "$l" == '"' ) || ( "$f" == "'" && "$l" == "'" ) ]]; then
+            s="${s:1:${#s}-2}"
+        fi
+    fi
+    printf '%s' "$s"
+}
+
+# Strip configured suffixes from each '/'-separated segment (exact, case-sensitive,
+# only when it leaves a non-empty name; first match wins per segment).
+strip_segment_suffixes() {
+    local path="$1"
+    [[ ${#strip_suffixes[@]} -eq 0 ]] && { printf '%s' "$path"; return; }
+    local out="" rest="$path" seg
+    while [[ "$rest" == */* ]]; do
+        seg="${rest%%/*}"
+        rest="${rest#*/}"
+        out+="$(_strip_one_segment "$seg")/"
+    done
+    out+="$(_strip_one_segment "$rest")"
+    printf '%s' "$out"
+}
+
+_strip_one_segment() {
+    local seg="$1" suf
+    for suf in "${strip_suffixes[@]}"; do
+        [[ -z "$suf" ]] && continue
+        if [[ "$seg" == *"$suf" && ${#seg} -gt ${#suf} ]]; then
+            printf '%s' "${seg%"$suf"}"
+            return
+        fi
+    done
+    printf '%s' "$seg"
 }

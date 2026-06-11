@@ -521,6 +521,10 @@
 
   <div class="mappings-panel" id="mappings-panel">
     <div id="mappings-list"></div>
+    <label class="suffix-row" style="display:flex;gap:.5rem;align-items:center;margin-top:.5rem;">
+      <span class="eq">Strip suffixes</span>
+      <input id="strip-suffixes-input" class="vol-input" placeholder="_LA, _NY" spellcheck="false">
+    </label>
     <div class="mapping-actions">
       <button id="add-mapping">+ Add mapping</button>
       <button id="reset-mappings">Reset to defaults</button>
@@ -538,6 +542,22 @@ const DEFAULT_MAPPINGS = [
 ];
 
 const STORAGE_KEY = "pcpath_mappings";
+const SUFFIX_KEY = "pcpath_strip_suffixes";
+const DEFAULT_SUFFIXES = ["_LA"];
+
+function loadSuffixes() {
+  try {
+    const saved = localStorage.getItem(SUFFIX_KEY);
+    if (saved) { const a = JSON.parse(saved); if (Array.isArray(a)) return a; }
+  } catch {}
+  return DEFAULT_SUFFIXES.slice();
+}
+
+function saveSuffixes(list) {
+  localStorage.setItem(SUFFIX_KEY, JSON.stringify(list));
+}
+
+let stripSuffixes = loadSuffixes();
 
 function loadMappings() {
   try {
@@ -559,6 +579,16 @@ function stripWrappingQuotes(s) {
     if ((f === '"' && l === '"') || (f === "'" && l === "'")) return s.slice(1, -1);
   }
   return s;
+}
+
+function stripSegmentSuffixes(path) {
+  if (!stripSuffixes.length) return path;
+  return path.replace(/[^\\/]+/g, (seg) => {
+    for (const suf of stripSuffixes) {
+      if (suf && seg.length > suf.length && seg.endsWith(suf)) return seg.slice(0, -suf.length);
+    }
+    return seg;
+  });
 }
 
 // --- Detection ---
@@ -650,9 +680,10 @@ function convert(input) {
 
     const line = normalizeMacLike(trimmed);
     const type = detectType(line);
-    return type === "pc" ? pcToMac(line) :
-           type === "mac" ? macToPC(line) :
-           line;
+    const converted = type === "pc" ? pcToMac(line) :
+                      type === "mac" ? macToPC(line) :
+                      line;
+    return stripSegmentSuffixes(converted);
   }).join("\n");
 }
 
@@ -814,6 +845,14 @@ document.getElementById("reset-mappings").addEventListener("click", () => {
 });
 
 renderMappings();
+
+const suffixInput = document.getElementById("strip-suffixes-input");
+suffixInput.value = stripSuffixes.join(", ");
+suffixInput.addEventListener("input", () => {
+  stripSuffixes = suffixInput.value.split(",").map(s => s.trim()).filter(Boolean);
+  saveSuffixes(stripSuffixes);
+  if (inputEl.value) outputEl.value = convert(inputEl.value);
+});
 
 // --- Auto-copy toggle ---
 

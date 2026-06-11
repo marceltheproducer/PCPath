@@ -47,6 +47,20 @@ function eq(actual, expected, label) {
   eq(fns.stripWrappingQuotes('"mismatch\''), '"mismatch\'', "web: leaves mismatched quotes");
 }
 
+// --- Suffix stripping ---
+{
+  // Build a context with suffixes set, then load the helper against it.
+  const src = grab("stripSegmentSuffixes");
+  const fn = new Function("stripSuffixes", src + "\nreturn stripSegmentSuffixes;")(["_LA"]);
+  eq(fn("E:\\MONA_Moana_LA\\shots\\010"), "E:\\MONA_Moana\\shots\\010", "web: strips _LA on subfolder (win)");
+  eq(fn("/Volumes/EDIT/MONA_Moana_LA/shots"), "/Volumes/EDIT/MONA_Moana/shots", "web: strips _LA (mac)");
+  eq(fn("E:\\TO GFX_LA\\x"), "E:\\TO GFX\\x", "web: keeps space, strips suffix");
+  eq(fn("E:\\TO GFX\\x"), "E:\\TO GFX\\x", "web: no tag unchanged");
+  eq(fn("E:\\_LA\\x"), "E:\\_LA\\x", "web: never empties a segment");
+  const none = new Function("stripSuffixes", src + "\nreturn stripSegmentSuffixes;")([]);
+  eq(none("E:\\MONA_Moana_LA\\x"), "E:\\MONA_Moana_LA\\x", "web: empty suffix list is a no-op");
+}
+
 export { html, grab, load, eq };
 globalThis.__pcpathFailures = (globalThis.__pcpathFailures ?? 0) + failures;
 process.on("exit", () => process.exit(globalThis.__pcpathFailures ? 1 : 0));

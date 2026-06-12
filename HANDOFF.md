@@ -12,11 +12,11 @@ web converter for everything else.
 
 | Surface  | Version | Notes |
 |----------|---------|-------|
-| Windows installer | **2.2** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
-| Web converter     | **v1.3.0** (`PCPath_v1.3.0.html`) | Self-contained, dark mode, inline-SVG favicon |
+| Windows installer | **2.3** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
+| Web converter     | **v1.4.0** (`PCPath_v1.4.0.html`) | Self-contained, dark mode, inline-SVG favicon |
 | Mac install       | No version stamp (manual `install.sh` / curl one-liner) | One-shot script + `~/.pcpath/install.log` |
 
-Bump Windows by editing `!define PCPATH_VERSION "2.2"` in `windows/PCPathInstall.nsi`
+Bump Windows by editing `!define PCPATH_VERSION "2.3"` in `windows/PCPathInstall.nsi`
 (or just run `sync.ps1` — it auto-bumps the minor).
 
 ---
@@ -84,7 +84,7 @@ Critical gotchas (already handled, don't re-introduce):
 ## Installation paths
 
 ### Windows (recommended)
-`G:\_library\Tech\DevOps\PCPath\PCPathInstall.exe` — double-click. Detects existing installs and shows "Updating: <old> → 2.2".
+`G:\_library\Tech\DevOps\PCPath\PCPathInstall.exe` — double-click. Detects existing installs and shows "Updating: <old> → 2.3".
 
 ### Mac (recommended)
 From a mounted SMB share or local copy of the PCPath folder:
@@ -102,7 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/main/remot
 `kandji/build_pkg.sh` on a Mac with Xcode CLI tools → signed .pkg → upload as Custom App.
 
 ### Web
-`PCPath_v1.3.0.html` — open in any browser. No install. localStorage-backed mappings.
+`PCPath_v1.4.0.html` — open in any browser. No install. localStorage-backed mappings.
 
 ---
 
@@ -134,7 +134,7 @@ PCPath/
 ├── Convert to Mac Path.workflow/
 ├── Copy Names.workflow/
 ├── kandji/                                      # MDM build + per-user setup
-├── web/PCPath_v1.3.0.html                       # standalone web converter
+├── web/PCPath_v1.4.0.html                       # standalone web converter
 ├── pcpath_mappings.default                      # ships as ~/.pcpath_mappings on first install
 └── HANDOFF.md                                   # this file
 ```
@@ -160,10 +160,10 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 - Windows **Copy Names** verb + **Copy as Path** verb (multi-select via `MultiSelectModel=Player`, silent via VBS launcher, grouped via `Position=Top`)
 - `convert_to_pc_path.ps1` now handles `smb://...` and `\Volumes\...`
 - `paste_mac_path.sh` (Mac) handles the same — self-contained bash URL-decoder, no python/perl dep
-- Web v1.2.0 → **v1.3.0**: matching normalization + inline-SVG favicon
+- Web v1.2.0 → **v1.3.0** → **v1.4.0**: matching normalization + inline-SVG favicon; v1.4.0 adds Path Opener parity (wrapping-quote strip + configurable `STRIP=` suffix UI, default `_LA`)
 - Mac **Copy Names** Quick Action + script (`copy_names.sh`, `Copy Names.workflow/`)
 - Mac install fixes shipped: `pbs -flush`, idempotent re-install, version-aware Settings deep-link, `pbcopy` → `osascript` fallback
-- Windows installer **2.0** → **2.1** → **2.2** with auto-update detection, build-stamped, listed in Add/Remove Programs
+- Windows installer **2.0** → **2.1** → **2.2** → **2.3** with auto-update detection, build-stamped, listed in Add/Remove Programs; 2.3 ships Path Opener parity (quote-strip, `STRIP=` suffix stripping, drive-label auto-discovery fallback)
 - New release pipeline: `windows/sync.ps1` + `sync.cmd` double-click shim
 - IT setup doc rewritten for current state (in `_Out/` and `G:\`)
 
@@ -184,7 +184,7 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 |---|---|
 | How does conversion logic work? (Windows) | `windows/convert_to_pc_path.ps1` |
 | How does conversion logic work? (Mac) | `paste_mac_path.sh` |
-| How does conversion logic work? (Web) | `web/PCPath_v1.3.0.html` → `normalizeMacLike` / `macToPC` / `pcToMac` |
+| How does conversion logic work? (Web) | `web/PCPath_v1.4.0.html` → `normalizeMacLike` / `macToPC` / `pcToMac` |
 | Why does multi-select work? | `pcpath_launch.vbs` + `MultiSelectModel=Player` regs in `install.ps1` |
 | Why no PowerShell window flash? | `pcpath_launch.vbs` (`WScript.Shell.Run cmd, 0, False`) |
 | How does the installer detect updates? | `PCPathInstall.nsi` → `.onInit` reads `DisplayVersion` |

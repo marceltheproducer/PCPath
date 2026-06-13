@@ -63,8 +63,25 @@ else
     printf "       Run install.sh to fix this.\n"
 fi
 
-# 4. Quick Action enabled state (cannot be read programmatically)
-_warn "Quick Action enable state unknown -- confirm in System Settings -> Extensions -> Finder"
+# 4. Quick Action enabled state (read from the pbs Services database)
+pbs_status=$(defaults read pbs NSServicesStatus 2>/dev/null)
+if [[ -z "$pbs_status" ]]; then
+    _warn "Enable state unknown (no pbs entries yet) -- confirm in System Settings -> Finder"
+else
+    enabled_count=0
+    for name in "Copy as PC Path" "Convert to Mac Path" "Copy Names"; do
+        # Each action is one block keyed by its menu name; check it's on in the
+        # context (right-click) menu, which is what makes it show up in Finder.
+        if printf '%s\n' "$pbs_status" | grep -A6 -F "$name -" | grep -q "enabled_context_menu = 1"; then
+            enabled_count=$((enabled_count + 1))
+        fi
+    done
+    if [[ "$enabled_count" -eq 3 ]]; then
+        _pass "All 3 Quick Actions enabled in Services database (pbs)"
+    else
+        _warn "$enabled_count/3 Quick Actions enabled -- confirm the rest in System Settings -> Finder"
+    fi
+fi
 
 # 5. Install log (informational, not required)
 if [[ -f "$LOG_FILE" ]]; then

@@ -1,0 +1,6 @@
+build/
+dist/
+build_local/
+dist_local/
+PCPath.xcodeproj/
+*.zip

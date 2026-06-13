@@ -100,6 +100,13 @@ for f in "$@"; do
 done
 
 if [[ -n "$output" ]]; then
+    # Shortcuts / stdout mode: print the result and let the caller (e.g. a
+    # Shortcuts "Copy to Clipboard" action) own the clipboard. This avoids
+    # pbcopy running inside a sandboxed Quick Action context.
+    if [[ "$PCPATH_OUTPUT_MODE" == "print" ]]; then
+        printf '%s' "$output"
+        exit 0
+    fi
     _copied=false
     if printf '%s' "$output" | pbcopy 2>/dev/null; then
         _copied=true

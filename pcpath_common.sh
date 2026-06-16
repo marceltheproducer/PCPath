@@ -8,7 +8,8 @@ PCPATH_CONFIG="$HOME/.pcpath_mappings"
 PCPATH_DEFAULTS="CONTENT=K
 GFX=G
 EDIT=E
-THE_NETWORK=N"
+THE_NETWORK=N
+DEV=V"
 
 # Config file format (~/.pcpath_mappings), one directive per line:
 #   VOLUME=LETTER   e.g.  EDIT=E

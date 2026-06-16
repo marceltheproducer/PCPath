@@ -12,6 +12,7 @@ CONTENT=K
 GFX=G
 EDIT=E
 THE_NETWORK=N
+DEV=V
 "@
 
     $Source = $DefaultMappings

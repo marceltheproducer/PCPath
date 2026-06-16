@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const html = fs.readFileSync(path.join(import.meta.dirname, "..", "web", "PCPath_v1.3.0.html"), "utf8");
+const html = fs.readFileSync(path.join(import.meta.dirname, "..", "web", "PCPath_v1.4.0.html"), "utf8");
 
 // Extract a named function's full source by brace-matching.
 function grab(name) {

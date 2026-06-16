@@ -50,13 +50,13 @@ convert_path() {
         if [[ "$mac_path" == "$prefix"* ]]; then
             # Use length-based slicing to preserve original case in remainder
             local remainder="${mac_path:${#prefix}}"
-            pc_path="${letter}:\\${remainder}"
+            pc_path="${letter}:/${remainder}"
             matched=true
             break
         fi
 
         if [[ "$mac_path" == "/Volumes/${vol}" ]]; then
-            pc_path="${letter}:\\"
+            pc_path="${letter}:/"
             matched=true
             break
         fi
@@ -70,9 +70,9 @@ convert_path() {
             local vol_name="${after_volumes%%/*}"
             if [[ "$after_volumes" == */* ]]; then
                 local remainder="${after_volumes#*/}"
-                pc_path="?(${vol_name}):\\${remainder}"
+                pc_path="?(${vol_name}):/${remainder}"
             else
-                pc_path="?(${vol_name}):\\"
+                pc_path="?(${vol_name}):/"
             fi
         else
             # Non-volume path (e.g. /Users/..., /tmp/...) — cannot convert
@@ -81,7 +81,10 @@ convert_path() {
         fi
     fi
 
-    # Replace forward slashes with backslashes
+    # Strip suffixes while the path is still '/'-separated (drive letter is its
+    # own segment), THEN convert to backslashes. Stripping before the conversion
+    # is required: strip_segment_suffixes splits on '/', so a backslash-glued
+    # "E:\seg" would be one segment and defeat the per-segment length guard.
     pc_path="$(strip_segment_suffixes "$pc_path")"
     pc_path="${pc_path//\//\\}"
 

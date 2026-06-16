@@ -1,10 +1,16 @@
 # PCPath — Handoff / Context
 
-Last touched: 2026-05-15. Owner: Marcel Perez.
+Last touched: 2026-06-16. Owner: Marcel Perez.
 
 PCPath converts file paths between Mac (`/Volumes/...`) and Windows (`K:\...`)
 formats via right-click context menu actions on both OSes, plus a no-install
 web converter for everything else.
+
+> **In-flight (branch `mac-finder-extension`, not yet on `main`):** a new
+> **Finder Sync extension** (`macapp/`) that replaces the Mac Automator Quick
+> Actions, which register but silently no-op on macOS 26 (Tahoe). Built and
+> validated locally, **not yet released or synced** to the 4 locations. See
+> "Mac right-click — two mechanisms" and "Open items" below.
 
 ---
 
@@ -14,7 +20,8 @@ web converter for everything else.
 |----------|---------|-------|
 | Windows installer | **2.3** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
 | Web converter     | **v1.4.0** (`PCPath_v1.4.0.html`) | Self-contained, dark mode, inline-SVG favicon |
-| Mac install       | No version stamp (manual `install.sh` / curl one-liner) | One-shot script + `~/.pcpath/install.log` |
+| Mac install (legacy) | No version stamp (manual `install.sh` / curl one-liner) | Automator Quick Actions — **broken on Tahoe** |
+| Mac app + extension   | **1.0.0** (in-flight, branch only) | Finder Sync extension; signed/notarized; Kandji pkg |
 
 Bump Windows by editing `!define PCPATH_VERSION "2.3"` in `windows/PCPathInstall.nsi`
 (or just run `sync.ps1` — it auto-bumps the minor).
@@ -30,10 +37,30 @@ Bump Windows by editing `!define PCPATH_VERSION "2.3"` in `windows/PCPathInstall
 | Copy Names       | Copy Names | Filenames only, one per line |
 | Convert to PC Path (background / desktop) | Convert to Mac Path | Reads clipboard |
 
-Path-shape coverage (all three implementations match — Windows ps1, Mac sh, web JS):
+Path-shape coverage (all four implementations match — Windows ps1, Mac sh, Mac
+Swift, web JS):
 - `/Volumes/<vol>/...` (canonical)
 - `smb://server/share/...` (bare hostname OR FQDN, URL-decoded)
 - `\Volumes\X\...`, `\\Volumes\X\...`, `/volumes/X/...` (case + slash variants)
+
+---
+
+## Mac right-click — two mechanisms
+
+| Mechanism | macOS | Status |
+|---|---|---|
+| **Automator Quick Actions** (`*.workflow/` + `install.sh`) | ≤ 15 (Sequoia) | Works, but **silently no-ops on macOS 26 Tahoe** — registers under Services and never runs |
+| **Finder Sync extension** (`macapp/`) | modern, incl. Tahoe | **Forward path.** Signed/notarized app, MDM-pushable via Kandji, in `mac-finder-extension` branch (unreleased) |
+
+The Finder Sync extension uses `macapp/Sources/PCPathKit/PathConverter.swift` —
+a Foundation-only, unit-tested **single source of truth** for conversion. It
+also fixes a latent `_LA` suffix-strip bug still present in the shell version
+(`copy_pc_path.sh` strips on a backslash-glued string; see Open items). Both the
+app and the extension compile the same `PathConverter.swift`. Reads the same
+`~/.pcpath_mappings` file as the shell tool, with built-in fallback defaults.
+
+Build/rollout docs: `macapp/README.md`. Requires a build Mac with **full Xcode**,
+XcodeGen, Developer ID certs, and a notarytool profile.
 
 ---
 
@@ -130,10 +157,17 @@ PCPath/
 │   ├── copy_pc_path.sh                          # Quick Action: -> K:\...
 │   ├── paste_mac_path.sh                        # Quick Action: clipboard -> /Volumes/
 │   └── copy_names.sh                            # Quick Action: names CRLF
-├── Copy as PC Path.workflow/                    # Automator Quick Action bundles
+├── Copy as PC Path.workflow/                    # Automator Quick Action bundles (legacy, ≤ macOS 15)
 ├── Convert to Mac Path.workflow/
 ├── Copy Names.workflow/
-├── kandji/                                      # MDM build + per-user setup
+├── macapp/                                       # NEW: Finder Sync extension (Tahoe-safe, branch only)
+│   ├── Sources/PCPathKit/PathConverter.swift    #   conversion core — single source of truth
+│   ├── Sources/FinderSync/                       #   FIFinderSync extension (4 verbs)
+│   ├── Sources/PCPathApp/                        #   container app (enable + edit mappings)
+│   ├── Tests/PathConverterTests.swift            #   swiftc-runnable, no Xcode
+│   ├── project.yml / build.sh                    #   XcodeGen spec + sign/notarize
+│   └── README.md                                 #   build + rollout docs
+├── kandji/                                      # MDM build + per-user setup (incl. build_app_pkg.sh, enable_extension.sh)
 ├── web/PCPath_v1.4.0.html                       # standalone web converter
 ├── pcpath_mappings.default                      # ships as ~/.pcpath_mappings on first install
 └── HANDOFF.md                                   # this file
@@ -148,6 +182,7 @@ CONTENT=K
 GFX=G
 EDIT=E
 THE_NETWORK=N
+DEV=V
 ```
 
 Lives at `~/.pcpath_mappings` (Mac) / `%USERPROFILE%\.pcpath_mappings` (Windows).
@@ -155,8 +190,18 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ---
 
-## Recent work (this session)
+## Recent work
 
+### Mac Finder Sync extension (branch `mac-finder-extension`, commit `1d886ab`, Jun 2026)
+- New `macapp/` — signed/notarized app + `FIFinderSync` extension replacing the
+  Tahoe-broken Automator actions; 4 verbs, monitors `/` + all `/Volumes` mounts.
+- `PathConverter.swift` — Foundation-only conversion core, now the single source
+  of truth, unit-tested via `swiftc` (no Xcode). Fixes the `_LA` shell suffix bug.
+- `kandji/build_app_pkg.sh` + `enable_extension.sh` + LaunchAgent for MDM rollout.
+- `DEV=V` added to default mappings; `install.sh`/`verify.sh` hardening.
+- **Not yet released** — lives on the branch; not merged to `main` or synced.
+
+### Prior session
 - Windows **Copy Names** verb + **Copy as Path** verb (multi-select via `MultiSelectModel=Player`, silent via VBS launcher, grouped via `Position=Top`)
 - `convert_to_pc_path.ps1` now handles `smb://...` and `\Volumes\...`
 - `paste_mac_path.sh` (Mac) handles the same — self-contained bash URL-decoder, no python/perl dep
@@ -171,6 +216,16 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Open items / known limitations
 
+- **`mac-finder-extension` branch is unreleased.** Commit `1d886ab` is 1 ahead of
+  `main`, not synced to any of the 4 locations. Releasing needs a **build Mac**
+  (full Xcode + Developer ID certs + notarytool profile) — this Windows box can't
+  build it. Decide: merge to `main` + build/notarize on a Mac → Kandji pkg.
+- **`_LA` suffix-strip bug in the shell tool — FIXED on this branch.**
+  `copy_pc_path.sh` now builds the PC path with `/` (drive letter as its own
+  segment), strips, then converts to `\` — matching Swift + web. This corrects a
+  folder named exactly `_LA` being wrongly dropped and keeps the per-segment
+  length guard intact. Covered by `tests/run_shell.sh` ("never empties segment").
+  Ships with the next Mac sync. (Was: built `E:\seg` glued, defeating the guard.)
 - **macOS enable step** — Apple requires the user to check Quick Actions in System Settings. No automation possible (Privacy & Security model).
 - **Mac install has no version stamp** — `install.log` exists but no `version.txt` equivalent. Low priority; pkg path (Kandji) has version metadata.
 - **Pre-existing dirty files in git** that this session didn't touch: `kandji/build_pkg.sh`, `kandji/uninstall_mdm.sh`, `pcpath_common.sh`, `remote_install.sh`, `Convert to Mac Path.workflow/Contents/Info.plist`. They're deployed but uncommitted. Inspect with `git diff` and decide before next release.
@@ -183,7 +238,8 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 | Question | File |
 |---|---|
 | How does conversion logic work? (Windows) | `windows/convert_to_pc_path.ps1` |
-| How does conversion logic work? (Mac) | `paste_mac_path.sh` |
+| How does conversion logic work? (Mac, legacy shell) | `paste_mac_path.sh` / `copy_pc_path.sh` + `pcpath_common.sh` |
+| How does conversion logic work? (Mac, new extension) | `macapp/Sources/PCPathKit/PathConverter.swift` |
 | How does conversion logic work? (Web) | `web/PCPath_v1.4.0.html` → `normalizeMacLike` / `macToPC` / `pcToMac` |
 | Why does multi-select work? | `pcpath_launch.vbs` + `MultiSelectModel=Player` regs in `install.ps1` |
 | Why no PowerShell window flash? | `pcpath_launch.vbs` (`WScript.Shell.Run cmd, 0, False`) |

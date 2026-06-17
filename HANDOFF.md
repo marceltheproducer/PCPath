@@ -6,11 +6,12 @@ PCPath converts file paths between Mac (`/Volumes/...`) and Windows (`K:\...`)
 formats via right-click context menu actions on both OSes, plus a no-install
 web converter for everything else.
 
-> **In-flight (branch `mac-finder-extension`, not yet on `main`):** a new
-> **Finder Sync extension** (`macapp/`) that replaces the Mac Automator Quick
-> Actions, which register but silently no-op on macOS 26 (Tahoe). Built and
-> validated locally, **not yet released or synced** to the 4 locations. See
-> "Mac right-click — two mechanisms" and "Open items" below.
+> **On `main` (merged + pushed 2026-06-16):** a new **Finder Sync extension**
+> (`macapp/`) that replaces the Mac Automator Quick Actions, which register but
+> silently no-op on macOS 26 (Tahoe). Source is merged, pushed, and the repo +
+> all distribution folders are synced at installer **2.3**. **Still to do on a
+> Mac:** build/sign/notarize the `.app` → Kandji `.pkg` (can't be done on
+> Windows). See "Mac right-click — two mechanisms" and "Open items" below.
 
 ---
 
@@ -216,10 +217,11 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Open items / known limitations
 
-- **`mac-finder-extension` branch is unreleased.** Commit `1d886ab` is 1 ahead of
-  `main`, not synced to any of the 4 locations. Releasing needs a **build Mac**
-  (full Xcode + Developer ID certs + notarytool profile) — this Windows box can't
-  build it. Decide: merge to `main` + build/notarize on a Mac → Kandji pkg.
+- **Mac Finder extension: source shipped, binary not built.** Merged to `main`,
+  pushed, and synced to all 4 locations at installer 2.3 (2026-06-16). The signed
+  `.app`/`.pkg` still needs a **build Mac** (full Xcode + Developer ID certs +
+  notarytool profile) — `macapp/build.sh` → `kandji/build_app_pkg.sh` → Kandji.
+  Until then the legacy Automator path is all macOS users have (broken on Tahoe).
 - **`_LA` suffix-strip bug in the shell tool — FIXED on this branch.**
   `copy_pc_path.sh` now builds the PC path with `/` (drive letter as its own
   segment), strips, then converts to `\` — matching Swift + web. This corrects a

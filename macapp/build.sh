@@ -44,6 +44,8 @@ if [[ -n "${DEVELOPER_ID_APP:-}" ]]; then
         DEVELOPMENT_TEAM="$TEAM_ID"
         CODE_SIGN_STYLE=Manual
         OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime"
+        # Strip the get-task-allow debug entitlement — notarization rejects it.
+        CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO
     )
     echo "Signing as: $DEVELOPER_ID_APP"
 else

@@ -62,8 +62,16 @@ chmod +x "$SCRIPTS/postinstall"
 
 # --- build component pkg ---
 COMPONENT="$BUILD/PCPath-component.pkg"
+# Disable bundle relocation. pkgbuild marks app bundles relocatable by default,
+# so the installer "updates in place" any existing PCPath.app it finds on disk
+# (e.g. a leftover dev build under ~) instead of installing to /Applications.
+# Forcing BundleIsRelocatable=false makes it always install at the declared path.
+COMPONENT_PLIST="$BUILD/component.plist"
+pkgbuild --analyze --root "$PAYLOAD" "$COMPONENT_PLIST"
+/usr/libexec/PlistBuddy -c "Set :0:BundleIsRelocatable false" "$COMPONENT_PLIST" 2>/dev/null || true
 pkgbuild \
     --root "$PAYLOAD" \
+    --component-plist "$COMPONENT_PLIST" \
     --scripts "$SCRIPTS" \
     --identifier "com.pcpath.app.pkg" \
     --version "$VERSION" \

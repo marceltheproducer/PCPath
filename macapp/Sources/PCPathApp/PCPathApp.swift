@@ -22,9 +22,8 @@ struct ContentView: View {
     @State private var mappingsText: String = ""
     @State private var saveNote: String = ""
 
-    private var configURL: URL {
-        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".pcpath_mappings")
-    }
+    // Shared app-group container (sandboxed app + extension read the same file).
+    private var configURL: URL { PCPathConfig.mappingsURL }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -51,7 +50,7 @@ struct ContentView: View {
                 }.padding(6)
             }
 
-            GroupBox("Drive mappings  (~/.pcpath_mappings)") {
+            GroupBox("Drive mappings") {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("One per line: VOLUME=LETTER (e.g. EDIT=E). STRIP=_LA trims a folder suffix.")
                         .font(.caption).foregroundStyle(.secondary)

@@ -68,8 +68,35 @@ public struct PCPathConfig: Equatable {
         return PCPathConfig(mappings: mappings, stripSuffixes: stripSuffixes)
     }
 
-    /// Load from ~/.pcpath_mappings, falling back to built-in defaults.
-    public static func load(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> PCPathConfig {
+    /// App group shared between the container app and the Finder Sync extension.
+    /// Both are sandboxed (required for the extension to load on Tahoe+), and a
+    /// sandboxed process cannot read ~/.pcpath_mappings — so the mappings file
+    /// lives in this group's container, written by the app and read by both.
+    public static let appGroupID = "6M993C5R86.com.pcpath.shared"
+
+    /// Resolved location of the mappings file. Prefers the app-group container
+    /// (sandboxed app + extension); falls back to ~/.pcpath_mappings for the
+    /// shell tools and unsandboxed dev builds where the container is nil.
+    public static var mappingsURL: URL {
+        if let group = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
+            return group.appendingPathComponent("pcpath_mappings")
+        }
+        return FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".pcpath_mappings")
+    }
+
+    /// Load from the resolved mappings file, falling back to built-in defaults.
+    public static func load() -> PCPathConfig {
+        if let text = try? String(contentsOf: mappingsURL, encoding: .utf8) {
+            return parse(text)
+        }
+        return parse(builtinDefaultsText)
+    }
+
+    /// Load from an explicit home directory's ~/.pcpath_mappings. Used by the
+    /// tests and for shell parity; production code paths call `load()`.
+    public static func load(home: URL) -> PCPathConfig {
         let url = home.appendingPathComponent(".pcpath_mappings")
         if let text = try? String(contentsOf: url, encoding: .utf8) {
             return parse(text)

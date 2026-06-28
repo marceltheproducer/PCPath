@@ -1,17 +1,20 @@
 # PCPath — Handoff / Context
 
-Last touched: 2026-06-16. Owner: Marcel Perez.
+Last touched: 2026-06-27. Owner: Marcel Perez.
 
 PCPath converts file paths between Mac (`/Volumes/...`) and Windows (`K:\...`)
 formats via right-click context menu actions on both OSes, plus a no-install
 web converter for everything else.
 
-> **On `main` (merged + pushed 2026-06-16):** a new **Finder Sync extension**
-> (`macapp/`) that replaces the Mac Automator Quick Actions, which register but
-> silently no-op on macOS 26 (Tahoe). Source is merged, pushed, and the repo +
-> all distribution folders are synced at installer **2.3**. **Still to do on a
-> Mac:** build/sign/notarize the `.app` → Kandji `.pkg` (can't be done on
-> Windows). See "Mac right-click — two mechanisms" and "Open items" below.
+> **Mac Finder Sync extension is BUILT and SHIPPED (2026-06-27).** The signed
+> (Developer ID, Team `6M993C5R86`), notarized + stapled **`PCPath-app-1.0.1.pkg`**
+> is in the IT distribution folders, ready for Kandji. The extension is sandboxed
+> and shares a **App Group container** (`6M993C5R86.com.pcpath.shared`) with the
+> container app for the drive-mappings file — the temporary-exception home-path
+> approach was abandoned because a sandboxed extension genuinely can't read
+> `~/.pcpath_mappings`. Kandji rollout steps: `_Out/PCPath/IRU-DEPLOY.md`.
+> Windows installer remains at **2.3** (unchanged). See "Mac right-click — two
+> mechanisms" and "Open items" below.
 
 ---
 
@@ -22,7 +25,7 @@ web converter for everything else.
 | Windows installer | **2.3** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
 | Web converter     | **v1.4.0** (`PCPath_v1.4.0.html`) | Self-contained, dark mode, inline-SVG favicon |
 | Mac install (legacy) | No version stamp (manual `install.sh` / curl one-liner) | Automator Quick Actions — **broken on Tahoe** |
-| Mac app + extension   | **1.0.0** (in-flight, branch only) | Finder Sync extension; signed/notarized; Kandji pkg |
+| Mac app + extension   | **1.0.1** (built + shipped) | Finder Sync extension; signed (Team `6M993C5R86`), notarized + stapled; `PCPath-app-1.0.1.pkg` in distribution; App Group container |
 
 Bump Windows by editing `!define PCPATH_VERSION "2.3"` in `windows/PCPathInstall.nsi`
 (or just run `sync.ps1` — it auto-bumps the minor).
@@ -51,14 +54,26 @@ Swift, web JS):
 | Mechanism | macOS | Status |
 |---|---|---|
 | **Automator Quick Actions** (`*.workflow/` + `install.sh`) | ≤ 15 (Sequoia) | Works, but **silently no-ops on macOS 26 Tahoe** — registers under Services and never runs |
-| **Finder Sync extension** (`macapp/`) | modern, incl. Tahoe | **Forward path.** Signed/notarized app, MDM-pushable via Kandji, in `mac-finder-extension` branch (unreleased) |
+| **Finder Sync extension** (`macapp/`) | modern, incl. Tahoe | **Forward path. BUILT + SHIPPED at 1.0.1.** Signed/notarized `.pkg` in distribution, MDM-pushable via Kandji |
 
 The Finder Sync extension uses `macapp/Sources/PCPathKit/PathConverter.swift` —
 a Foundation-only, unit-tested **single source of truth** for conversion. It
 also fixes a latent `_LA` suffix-strip bug still present in the shell version
 (`copy_pc_path.sh` strips on a backslash-glued string; see Open items). Both the
-app and the extension compile the same `PathConverter.swift`. Reads the same
-`~/.pcpath_mappings` file as the shell tool, with built-in fallback defaults.
+app and the extension compile the same `PathConverter.swift`.
+
+**Mappings storage — App Group, not `~/.pcpath_mappings`.** Both the app and the
+extension are sandboxed (mandatory: Finder won't load an unsandboxed Sync
+extension on Tahoe), and a sandboxed process cannot read `~/.pcpath_mappings`.
+So the file lives in the shared App Group container
+`6M993C5R86.com.pcpath.shared` (`PCPathConfig.mappingsURL`), written by the app
+and read by both. `PCPathConfig.mappingsURL` falls back to `~/.pcpath_mappings`
+when the container is nil (shell tools + unsandboxed dev builds), preserving the
+cross-tool convention. The App Group + sandbox entitlements are declared in
+`macapp/project.yml` under each target's `entitlements.properties` — **hand-edits
+to the `.entitlements` files don't survive `xcodegen generate`.** The pkg is
+non-relocatable (`BundleIsRelocatable false` in `kandji/build_app_pkg.sh`) so it
+always installs to `/Applications`, never "updates in place" a stray dev build.
 
 Build/rollout docs: `macapp/README.md`. Requires a build Mac with **full Xcode**,
 XcodeGen, Developer ID certs, and a notarytool profile.
@@ -193,6 +208,21 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Recent work
 
+### Mac extension build + ship (2026-06-27)
+- Built, signed (Developer ID, Team `6M993C5R86`), notarized + stapled
+  **`PCPath-app-1.0.1.pkg`**; placed in `_Out/PCPath/mac/` and `G:\…\PCPath\`.
+- **App Group migration:** mappings file moved from `~/.pcpath_mappings`
+  (unreachable from a sandboxed extension) to the shared App Group container
+  `6M993C5R86.com.pcpath.shared`. Entitlements now declared in `project.yml`
+  `entitlements.properties` so `xcodegen generate` writes them; both targets
+  sandboxed + share the group. `PathConverter.swift` gains `appGroupID` /
+  `mappingsURL` with `~/.pcpath_mappings` fallback.
+- **Notarization fix:** `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO` to strip
+  `get-task-allow` (commit `1334863`).
+- **Installer fix:** non-relocatable pkg (`BundleIsRelocatable false`) so it
+  always lands in `/Applications`.
+- New `_Out/PCPath/IRU-DEPLOY.md` — Kandji upload + auto-enable profile steps.
+
 ### Mac Finder Sync extension (branch `mac-finder-extension`, commit `1d886ab`, Jun 2026)
 - New `macapp/` — signed/notarized app + `FIFinderSync` extension replacing the
   Tahoe-broken Automator actions; 4 verbs, monitors `/` + all `/Volumes` mounts.
@@ -217,11 +247,14 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Open items / known limitations
 
-- **Mac Finder extension: source shipped, binary not built.** Merged to `main`,
-  pushed, and synced to all 4 locations at installer 2.3 (2026-06-16). The signed
-  `.app`/`.pkg` still needs a **build Mac** (full Xcode + Developer ID certs +
-  notarytool profile) — `macapp/build.sh` → `kandji/build_app_pkg.sh` → Kandji.
-  Until then the legacy Automator path is all macOS users have (broken on Tahoe).
+- **Mac Finder extension: BUILT + SHIPPED (2026-06-27).** Signed, notarized +
+  stapled `PCPath-app-1.0.1.pkg` is in `_Out/PCPath/mac/` and `G:\…\PCPath\`,
+  ready to upload to Kandji per `_Out/PCPath/IRU-DEPLOY.md`. The `.pkg` is
+  **gitignored** (`kandji/*.pkg`) — it lives in the distribution folders only,
+  never in the repo. Source (App Group migration + non-relocatable pkg fix) is
+  committed + pushed. *Next:* pilot on one clean Mac; if the right-click menu
+  appears without a System Settings toggle, ship org-wide, else add the managed
+  Login Items & Extensions profile for Team `6M993C5R86` (see IRU-DEPLOY.md).
 - **`_LA` suffix-strip bug in the shell tool — FIXED on this branch.**
   `copy_pc_path.sh` now builds the PC path with `/` (drive letter as its own
   segment), strips, then converts to `\` — matching Swift + web. This corrects a

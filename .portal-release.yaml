@@ -1,0 +1,24 @@
+# CREATE Portal — hosted release config (v2.0 onboarding model)
+#
+# Publish a release (from a Windows domain-joined machine, as your domain login):
+#   node "\\calamedia\dev\General Dev\Design\AppDirector\scripts\portal-publish.mjs" --release .portal-release.yaml --dry-run
+#   node "\\calamedia\dev\General Dev\Design\AppDirector\scripts\portal-publish.mjs" --release .portal-release.yaml
+# Needs NOTION_TOKEN + PORTAL_PUBLISH_TOKEN in the environment (ask Marcel).
+#
+# ⚠️ Do NOT bump the Notion `Version` by hand — that only changes what the portal
+# advertises; the client then asks for a build the store doesn't have. Always publish
+# via the script so the binary + Version/Hosted/Entry Filename move together.
+
+id: d506eaff-e20a-40c0-8079-1a8ecc909776   # PCPath row in the R&D Tech Development Tracker
+name: PCPath
+hosted: true
+latestVersion: 2.3
+entryFilename: PCPathInstall.exe
+
+# A FOLDER holding ONLY this version's build — the script zips the whole folder, so keep it to
+# just the self-contained NSIS installer (not the shared _Out\windows folder). Each release:
+# rebuild the exe, drop it into a clean per-version folder, bump latestVersion + this path together.
+# Forward slashes; resolves on Windows ( //calamedia/dev = the V: drive ).
+buildOutput: //calamedia/dev/General Dev/Design/_Out/PCPath/windows/builds/2.3/
+
+portalBaseUrl: https://caladevportal.createadvertising.com

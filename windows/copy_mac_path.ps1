@@ -25,6 +25,12 @@ if (-not $FilePath) {
 
 function Convert-OneToMac {
     param([string]$P)
+    # \\server\share\rest -> /Volumes/share/rest (host dropped — mirrors smb://).
+    # Device paths (\\?\..., \\.\...) fall through to the drive-letter guard below.
+    if ($P -match '^\\\\([^\\/]+)[\\/](.+)$' -and $Matches[1] -notin @('?', '.')) {
+        $res = '/Volumes/' + ($Matches[2] -replace '\\', '/')
+        return (Remove-SegmentSuffixes $res $StripSuffixes)
+    }
     if ($P -notmatch '^[A-Za-z]:') { return $null }
     $letter    = $P.Substring(0, 1).ToUpper()
     $remainder = if ($P.Length -gt 3) { $P.Substring(3) } else { "" }
@@ -81,7 +87,7 @@ foreach ($p in $paths) {
 }
 
 if ($results.Count -eq 0) {
-    Write-Host "No drive-letter paths to convert (UNC and relative paths are not supported)."
+    Write-Host "No convertible paths (relative paths are not supported)."
     exit 1
 }
 

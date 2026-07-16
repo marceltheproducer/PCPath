@@ -7,7 +7,7 @@
 
 ;--------------------------------
 ; Semantic version — bump manually for releases.
-!define PCPATH_VERSION "2.3"
+!define PCPATH_VERSION "2.4"
 
 ; Build stamp — auto-updated every makensis run so you can verify which build
 ; is installed. Format: YYYY.MM.DD.HHMM

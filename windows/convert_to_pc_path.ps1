@@ -51,6 +51,13 @@ $Path -split "`n" | ForEach-Object {
         $Line = $Line -replace '^/+[Vv]olumes/', '/Volumes/'
     }
 
+    # \\server\share\rest -> /Volumes/share/rest (host dropped — mirrors smb://,
+    # share name == volume name). Device paths (\\?\..., \\.\...) and a bare
+    # \\server fall through untouched.
+    if ($Line -match '^\\\\([^\\/]+)[\\/](.+)$' -and $Matches[1] -notin @('?', '.')) {
+        $Line = '/Volumes/' + ($Matches[2] -replace '\\', '/')
+    }
+
     # Normalize path missing /Volumes/ prefix (e.g. "EDIT/folder/..." -> "/Volumes/EDIT/folder/...")
     if ($Line -notmatch "^/Volumes/") {
         $checkLine = $Line.TrimStart('/')

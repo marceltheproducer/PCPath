@@ -1,6 +1,6 @@
 # PCPath — Handoff / Context
 
-Last touched: 2026-06-27. Owner: Marcel Perez.
+Last touched: 2026-07-15. Owner: Marcel Perez.
 
 PCPath converts file paths between Mac (`/Volumes/...`) and Windows (`K:\...`)
 formats via right-click context menu actions on both OSes, plus a no-install
@@ -13,8 +13,8 @@ web converter for everything else.
 > container app for the drive-mappings file — the temporary-exception home-path
 > approach was abandoned because a sandboxed extension genuinely can't read
 > `~/.pcpath_mappings`. Kandji rollout steps: `_Out/PCPath/IRU-DEPLOY.md`.
-> Windows installer remains at **2.3** (unchanged). See "Mac right-click — two
-> mechanisms" and "Open items" below.
+> Windows installer is now at **2.4** (shipped 2026-07-15 with UNC input
+> support). See "Mac right-click — two mechanisms" and "Open items" below.
 
 ---
 
@@ -22,12 +22,12 @@ web converter for everything else.
 
 | Surface  | Version | Notes |
 |----------|---------|-------|
-| Windows installer | **2.3** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
-| Web converter     | **v1.4.0** (`PCPath_v1.4.0.html`) | Self-contained, dark mode, inline-SVG favicon |
+| Windows installer | **2.4** (build stamp `YYYY.MM.DD.HHMM`) | NSIS exe, auto-updates, no PowerShell required |
+| Web converter     | **v1.5.0** (`PCPath_v1.5.0.html`) | Self-contained, dark mode, inline-SVG favicon |
 | Mac install (legacy) | No version stamp (manual `install.sh` / curl one-liner) | Automator Quick Actions — **broken on Tahoe** |
-| Mac app + extension   | **1.0.1** (built + shipped) | Finder Sync extension; signed (Team `6M993C5R86`), notarized + stapled; `PCPath-app-1.0.1.pkg` in distribution; App Group container |
+| Mac app + extension   | **1.0.1** shipped; **1.0.2 pending** (UNC support in source, needs build Mac) | Finder Sync extension; signed (Team `6M993C5R86`), notarized + stapled; `PCPath-app-1.0.1.pkg` in distribution; App Group container |
 
-Bump Windows by editing `!define PCPATH_VERSION "2.3"` in `windows/PCPathInstall.nsi`
+Bump Windows by editing `!define PCPATH_VERSION "2.4"` in `windows/PCPathInstall.nsi`
 (or just run `sync.ps1` — it auto-bumps the minor).
 
 ---
@@ -46,6 +46,7 @@ Swift, web JS):
 - `/Volumes/<vol>/...` (canonical)
 - `smb://server/share/...` (bare hostname OR FQDN, URL-decoded)
 - `\Volumes\X\...`, `\\Volumes\X\...`, `/volumes/X/...` (case + slash variants)
+- `\\server\share\...` (UNC — host dropped, share == volume name; `\\?\` and `\\.\` device paths and `//host/share` pass through)
 
 ---
 
@@ -127,7 +128,7 @@ Critical gotchas (already handled, don't re-introduce):
 ## Installation paths
 
 ### Windows (recommended)
-`G:\_library\Tech\DevOps\PCPath\PCPathInstall.exe` — double-click. Detects existing installs and shows "Updating: <old> → 2.3".
+`G:\_library\Tech\DevOps\PCPath\PCPathInstall.exe` — double-click. Detects existing installs and shows "Updating: <old> → 2.4".
 
 ### Mac (recommended)
 From a mounted SMB share or local copy of the PCPath folder:
@@ -145,7 +146,7 @@ curl -fsSL https://raw.githubusercontent.com/marceltheproducer/PCPath/main/remot
 `kandji/build_pkg.sh` on a Mac with Xcode CLI tools → signed .pkg → upload as Custom App.
 
 ### Web
-`PCPath_v1.4.0.html` — open in any browser. No install. localStorage-backed mappings.
+`PCPath_v1.5.0.html` — open in any browser. No install. localStorage-backed mappings.
 
 ---
 
@@ -184,7 +185,7 @@ PCPath/
 │   ├── project.yml / build.sh                    #   XcodeGen spec + sign/notarize
 │   └── README.md                                 #   build + rollout docs
 ├── kandji/                                      # MDM build + per-user setup (incl. build_app_pkg.sh, enable_extension.sh)
-├── web/PCPath_v1.4.0.html                       # standalone web converter
+├── web/PCPath_v1.5.0.html                       # standalone web converter
 ├── pcpath_mappings.default                      # ships as ~/.pcpath_mappings on first install
 └── HANDOFF.md                                   # this file
 ```
@@ -207,6 +208,19 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 ---
 
 ## Recent work
+
+### UNC input support + 2.4 release (2026-07-15)
+- All five conversion surfaces (Windows PS scripts, Mac `paste_mac_path.sh`, Mac
+  `PathConverter.swift`, web) now accept `\\server\share\...` UNC input, mirroring
+  the existing `smb://` handling: host is dropped, share becomes the volume name;
+  `\\?\` and `\\.\` device-path prefixes and `//host/share` forms pass through
+  unmangled. Design spec at
+  `docs/superpowers/specs/2026-07-15-unc-input-design.md`.
+- Web converter renamed/bumped to **v1.5.0** (`PCPath_v1.5.0.html`).
+- Windows installer bumped **2.3 → 2.4** via `sync.ps1`.
+- Swift `PathConverter.swift` + `Tests/PathConverterTests.swift` updated with UNC
+  coverage; **Mac app rebuild deferred to 1.0.2** — ships at the next build-Mac
+  session (needs Xcode/notarytool), source is committed now.
 
 ### Mac extension build + ship (2026-06-27)
 - Built, signed (Developer ID, Team `6M993C5R86`), notarized + stapled
@@ -247,6 +261,9 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Open items / known limitations
 
+- **Mac app 1.0.2 rebuild pending** — UNC support committed in
+  `PathConverter.swift` + tests; build/sign/notarize per `macapp/README.md` at
+  the next build-Mac session, then update the Kandji pkg.
 - **Mac Finder extension: BUILT + SHIPPED (2026-06-27).** Signed, notarized +
   stapled `PCPath-app-1.0.1.pkg` is in `_Out/PCPath/mac/` and `G:\…\PCPath\`,
   ready to upload to Kandji per `_Out/PCPath/IRU-DEPLOY.md`. The `.pkg` is
@@ -275,7 +292,7 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 | How does conversion logic work? (Windows) | `windows/convert_to_pc_path.ps1` |
 | How does conversion logic work? (Mac, legacy shell) | `paste_mac_path.sh` / `copy_pc_path.sh` + `pcpath_common.sh` |
 | How does conversion logic work? (Mac, new extension) | `macapp/Sources/PCPathKit/PathConverter.swift` |
-| How does conversion logic work? (Web) | `web/PCPath_v1.4.0.html` → `normalizeMacLike` / `macToPC` / `pcToMac` |
+| How does conversion logic work? (Web) | `web/PCPath_v1.5.0.html` → `normalizeMacLike` / `macToPC` / `pcToMac` |
 | Why does multi-select work? | `pcpath_launch.vbs` + `MultiSelectModel=Player` regs in `install.ps1` |
 | Why no PowerShell window flash? | `pcpath_launch.vbs` (`WScript.Shell.Run cmd, 0, False`) |
 | How does the installer detect updates? | `PCPathInstall.nsi` → `.onInit` reads `DisplayVersion` |

@@ -202,8 +202,18 @@ public struct PathConverter {
             }
         }
 
-        // Reject UNC paths (\\server\share or //server/share) — not supported.
-        if pcPath.hasPrefix("\\\\") || pcPath.hasPrefix("//") {
+        // \\server\share\rest → /Volumes/share/rest (host dropped — mirrors
+        // smb://, share name == volume name). Device paths (\\?\, \\.\),
+        // a bare \\server, and //... stay pass-through.
+        if pcPath.hasPrefix("\\\\") {
+            let norm = String(pcPath.dropFirst(2)).replacingOccurrences(of: "\\", with: "/")
+            let parts = norm.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+            if parts.count == 2, !parts[0].isEmpty, parts[0] != "?", parts[0] != ".", !parts[1].isEmpty {
+                return stripSegmentSuffixes("/Volumes/" + String(parts[1]))
+            }
+            return pcPath
+        }
+        if pcPath.hasPrefix("//") {
             return pcPath
         }
 

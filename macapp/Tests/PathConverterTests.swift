@@ -43,7 +43,14 @@ eq(c.pcToMac("smb://calamedia/EDIT/TO%20GFX/f"), "/Volumes/EDIT/TO GFX/f", "pc�
 eq(c.pcToMac("smb://calamedia.local/EDIT/x"), "/Volumes/EDIT/x", "pc→mac: smb FQDN host dropped")
 eq(c.pcToMac("\\Volumes\\EDIT\\x"), "/Volumes/EDIT/x", "pc→mac: backslash Volumes variant")
 eq(c.pcToMac("/volumes/EDIT/x"), "/Volumes/EDIT/x", "pc→mac: lowercase volumes variant")
-eq(c.pcToMac("\\\\server\\share\\x"), "\\\\server\\share\\x", "pc→mac: UNC rejected (passthrough)")
+eq(c.pcToMac("\\\\calamedia\\EDIT\\MONA_Moana_LA\\TO GFX\\f.mp4"), "/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4", "pc→mac: UNC host dropped + suffix + space")
+eq(c.pcToMac("\\\\calamedia.domain.tld\\CONTENT\\x\\y"), "/Volumes/CONTENT/x/y", "pc→mac: UNC FQDN host dropped")
+eq(c.pcToMac("\\\\srv\\EDIT"), "/Volumes/EDIT", "pc→mac: UNC share only")
+eq(c.pcToMac("\\\\srv\\GFX\\a/b\\c"), "/Volumes/GFX/a/b/c", "pc→mac: UNC mixed separators")
+eq(c.pcToMac("\\\\?\\C:\\x"), "\\\\?\\C:\\x", "pc→mac: device path passthrough")
+eq(c.pcToMac("\\\\srv"), "\\\\srv", "pc→mac: bare server passthrough")
+eq(c.pcToMac("//server/share/x"), "//server/share/x", "pc→mac: forward-slash UNC passthrough")
+eq(c.pcToMac("\\\\Volumes\\EDIT\\x"), "/Volumes/EDIT/x", "pc→mac: \\\\Volumes precedence over UNC")
 eq(c.pcToMac("E:\\MONA_Moana_LA\\shots"), "/Volumes/EDIT/MONA_Moana/shots", "pc→mac: strips _LA")
 
 // --- quotes ---

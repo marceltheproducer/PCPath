@@ -488,7 +488,7 @@
   </div>
 </div>
 
-<h1>PCPath <span class="version">v1.4.0</span></h1>
+<h1>PCPath <span class="version">v1.5.0</span></h1>
 <p class="subtitle">Paste a path. Get the other format.</p>
 
 <div class="auto-copy-feedback" id="auto-copy-feedback">✓ Auto-copied!</div>
@@ -655,6 +655,15 @@ function macToPC(macPath) {
 // --- PC to Mac ---
 
 function pcToMac(pcPath) {
+  // \\server\share\rest -> /Volumes/share/rest (host dropped — mirrors smb://,
+  // share name == volume name). Any other \\-prefixed input (device paths
+  // \\?\ and \\.\, bare \\server) passes through unchanged.
+  const unc = pcPath.match(/^\\\\([^\\/]+)[\\/](.+)$/);
+  if (unc && unc[1] !== "?" && unc[1] !== ".") {
+    return "/Volumes/" + unc[2].replace(/\\/g, "/");
+  }
+  if (pcPath.startsWith("\\\\")) return pcPath;
+
   const normalized = pcPath.replace(/\\/g, "/");
   const match = normalized.match(/^([A-Za-z]):(.*)/);
   if (!match) return normalized;

@@ -50,6 +50,25 @@ $o2raw = (& "$Root\windows\copy_mac_path.ps1" 'E:\MONA_Moana_LA\TO GFX\f.mp4' 6>
 $o2 = ($o2raw | Where-Object { $_ -like '*Volumes*' } | Select-Object -First 1) -replace '^Copied:\s*', ''
 Assert-Eq $o2.Trim() '/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4' "win e2e: PC->Mac suffix+space"
 
+# --- UNC input (host dropped, share == volume — mirrors smb://) ---
+$u1 = (& "$Root\windows\convert_to_pc_path.ps1" '\\calamedia\EDIT\_library\Tech' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u1 'E:\_library\Tech' "win e2e: UNC -> drive letter"
+$u2 = (& "$Root\windows\convert_to_pc_path.ps1" '\\calamedia.domain.tld\CONTENT\Projects\video.mp4' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u2 'K:\Projects\video.mp4' "win e2e: UNC FQDN host dropped"
+$u3 = (& "$Root\windows\convert_to_pc_path.ps1" '\\srv\EDIT' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u3 'E:\' "win e2e: UNC share only"
+$u4 = (& "$Root\windows\convert_to_pc_path.ps1" '\\calamedia\EDIT\MONA_Moana_LA\TO GFX\f.mp4' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u4 'E:\MONA_Moana\TO GFX\f.mp4' "win e2e: UNC suffix + space"
+$u5 = (& "$Root\windows\convert_to_pc_path.ps1" '\\?\C:\x' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u5 '\\?\C:\x' "win e2e: device path passthrough"
+$u6 = (& "$Root\windows\convert_to_pc_path.ps1" '\\Volumes\EDIT\x' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u6 'E:\x' "win e2e: \\Volumes precedence over UNC"
+$u7raw = (& "$Root\windows\copy_mac_path.ps1" '\\calamedia\EDIT\MONA_Moana_LA\f.mp4' 6>&1 | ForEach-Object { $_.ToString() })
+$u7 = ($u7raw | Where-Object { $_ -like '*Volumes*' } | Select-Object -First 1) -replace '^Copied:\s*', ''
+Assert-Eq $u7.Trim() '/Volumes/EDIT/MONA_Moana/f.mp4' "win e2e: copy_mac_path UNC -> Mac"
+$u8 = (& "$Root\windows\convert_to_pc_path.ps1" '\\srv\ZNOPE\x' 6>&1 | Select-Object -First 1).ToString() -replace '^Copied: ', ''
+Assert-Eq $u8 '?(ZNOPE):\x' "win e2e: UNC unknown share -> placeholder"
+
 # Auto-discovery with an injected fake volume list.
 $fake = @(
   [pscustomobject]@{ DriveLetter = 'E'; FileSystemLabel = 'EDIT' },

@@ -62,9 +62,18 @@ convert_to_mac() {
         return
     fi
 
-    # Reject UNC paths (\\server\share) — not supported
+    # \\server\share\rest -> /Volumes/share/rest (host dropped — mirrors smb://,
+    # share name == volume name). Device paths (\\?\..., \\.\...), bare \\server,
+    # and //... keep the warn + pass-through.
+    local re_unc='^\\\\([^\\/]+)[\\/](.+)$'
+    if [[ "$pc_path" =~ $re_unc && "${BASH_REMATCH[1]}" != "?" && "${BASH_REMATCH[1]}" != "." ]]; then
+        local unc_rest="${BASH_REMATCH[2]}"
+        unc_rest="${unc_rest//\\//}"
+        printf '%s' "$(strip_segment_suffixes "/Volumes/$unc_rest")"
+        return
+    fi
     if [[ "$pc_path" == \\\\* || "$pc_path" == //* ]]; then
-        echo "Warning: UNC path not supported: $pc_path (use a mapped drive letter instead)" >&2
+        echo "Warning: cannot convert path: $pc_path" >&2
         printf '%s' "$pc_path"
         return
     fi

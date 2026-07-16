@@ -65,6 +65,22 @@ eq "$out" "/Volumes/EDIT/MONA_Moana/shots" "shell e2e: PC->Mac suffix on mapped 
 out="$(bash "$ROOT/paste_mac_path.sh" '\Volumes\EDIT\MONA_Moana_LA\TO GFX\f.mp4' 2>/dev/null)"
 eq "$out" "/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4" "shell e2e: \\Volumes\\ suffix + space"
 
+# --- UNC input (host dropped, share == volume — mirrors smb://) ---
+out="$(bash "$ROOT/paste_mac_path.sh" '\\calamedia\EDIT\MONA_Moana_LA\TO GFX\f.mp4' 2>/dev/null)"
+eq "$out" "/Volumes/EDIT/MONA_Moana/TO GFX/f.mp4" "shell e2e: UNC suffix + space"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\calamedia.domain.tld\CONTENT\x\y' 2>/dev/null)"
+eq "$out" "/Volumes/CONTENT/x/y" "shell e2e: UNC FQDN host dropped"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\srv\EDIT' 2>/dev/null)"
+eq "$out" "/Volumes/EDIT" "shell e2e: UNC share only"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\?\C:\x' 2>/dev/null)"
+eq "$out" '\\?\C:\x' "shell e2e: device path passthrough"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\srv' 2>/dev/null)"
+eq "$out" '\\srv' "shell e2e: bare server passthrough"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\Volumes\EDIT\x' 2>/dev/null)"
+eq "$out" "/Volumes/EDIT/x" "shell e2e: \\Volumes precedence over UNC"
+out="$(bash "$ROOT/paste_mac_path.sh" '\\srv\GFX\a/b\c' 2>/dev/null)"
+eq "$out" "/Volumes/GFX/a/b/c" "shell e2e: UNC mixed separators"
+
 # Mac->PC: suffix strip, space kept
 bash "$ROOT/copy_pc_path.sh" "/Volumes/EDIT/MONA_Moana_LA/TO GFX/f.mp4" >/dev/null 2>&1
 eq "$(clip)" 'E:\MONA_Moana\TO GFX\f.mp4' "shell e2e: Mac->PC suffix + space"

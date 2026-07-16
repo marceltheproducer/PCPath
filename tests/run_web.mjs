@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const html = fs.readFileSync(path.join(import.meta.dirname, "..", "web", "PCPath_v1.4.0.html"), "utf8");
+const html = fs.readFileSync(path.join(import.meta.dirname, "..", "web", "PCPath_v1.5.0.html"), "utf8");
 
 // Extract a named function's full source by brace-matching.
 function grab(name) {
@@ -59,6 +59,21 @@ function eq(actual, expected, label) {
   eq(fn("E:\\_LA\\x"), "E:\\_LA\\x", "web: never empties a segment");
   const none = new Function("stripSuffixes", src + "\nreturn stripSegmentSuffixes;")([]);
   eq(none("E:\\MONA_Moana_LA\\x"), "E:\\MONA_Moana_LA\\x", "web: empty suffix list is a no-op");
+}
+
+// --- UNC input (host dropped, share == volume — mirrors smb://) ---
+{
+  const fns = load("normalizeMacLike", "detectType", "macToPC", "pcToMac");
+  const bs = String.fromCharCode(92);
+  const unc = bs + bs + "calamedia" + bs + "EDIT" + bs + "TO GFX" + bs + "f.mp4";
+  eq(fns.detectType(unc), "pc", "web: UNC detected as pc");
+  eq(fns.pcToMac(unc), "/Volumes/EDIT/TO GFX/f.mp4", "web: UNC -> mac, space kept");
+  eq(fns.pcToMac(bs + bs + "host.dom.tld" + bs + "CONTENT" + bs + "x"), "/Volumes/CONTENT/x", "web: UNC FQDN host dropped");
+  eq(fns.pcToMac(bs + bs + "srv" + bs + "EDIT"), "/Volumes/EDIT", "web: UNC share only");
+  eq(fns.pcToMac(bs + bs + "srv" + bs + "GFX" + bs + "a/b" + bs + "c"), "/Volumes/GFX/a/b/c", "web: UNC mixed separators");
+  eq(fns.pcToMac(bs + bs + "?" + bs + "C:" + bs + "x"), bs + bs + "?" + bs + "C:" + bs + "x", "web: device path passthrough");
+  eq(fns.pcToMac(bs + bs + "srv"), bs + bs + "srv", "web: bare server passthrough");
+  eq(fns.macToPC(fns.normalizeMacLike(bs + bs + "Volumes" + bs + "EDIT" + bs + "x")), "E:" + bs + "x", "web: \\Volumes precedence over UNC");
 }
 
 export { html, grab, load, eq };

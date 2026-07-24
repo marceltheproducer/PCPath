@@ -12,13 +12,13 @@
 id: d506eaff-e20a-40c0-8079-1a8ecc909776   # PCPath row in the R&D Tech Development Tracker
 name: PCPath
 hosted: true
-latestVersion: 2.3
+latestVersion: 2.4
 entryFilename: PCPathInstall.exe
 
 # A FOLDER holding ONLY this version's build — the script zips the whole folder, so keep it to
 # just the self-contained NSIS installer (not the shared _Out\windows folder). Each release:
 # rebuild the exe, drop it into a clean per-version folder, bump latestVersion + this path together.
 # Forward slashes; resolves on Windows ( //calamedia/dev = the V: drive ).
-buildOutput: //calamedia/dev/General Dev/Design/_Out/PCPath/windows/builds/2.3/
+buildOutput: //calamedia/dev/General Dev/Design/_Out/PCPath/windows/builds/2.4/
 
 portalBaseUrl: https://caladevportal.createadvertising.com

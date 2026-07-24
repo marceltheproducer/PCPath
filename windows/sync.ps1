@@ -69,27 +69,31 @@ $build = (Get-Item $Exe).VersionInfo.ProductVersion
 Write-Host "Built: $build" -ForegroundColor Green
 
 # --- 3. Sync to all secondary locations ---------------------------------------
-$WinDests = @(
+$RepoDest = "C:\Users\marcel.perez\work\PCPath\PCPath\windows"   # source repo: gets everything
+$ShipDests = @(                                                   # IT-facing: no dev tooling
     "V:\General Dev\Design\_Out\PCPath\windows",
-    "C:\Users\marcel.perez\work\PCPath\PCPath\windows"
+    "G:\_library\Tech\DevOps\PCPath"
 )
-$FlatDest = "G:\_library\Tech\DevOps\PCPath"
+
+# Dev tooling stays in the source repos only — never shipped to IT-facing folders.
+$DevTooling = @("sync.ps1", "sync.cmd", "build_installer.ps1")
 
 $WinFiles = Get-ChildItem $ScriptDir -File | Where-Object {
     $_.Name -notin @("install.log") -and -not $_.Name.StartsWith(".")
 }
+$ShipFiles = $WinFiles | Where-Object { $_.Name -notin $DevTooling }
 
-Write-Host "Syncing windows/ -> $($WinDests.Count) repo-style locations + flat G: ..." -ForegroundColor Cyan
-foreach ($d in $WinDests) {
-    if (-not (Test-Path $d)) { Write-Host "  skip (missing): $d" -ForegroundColor Yellow; continue }
-    foreach ($f in $WinFiles) { Copy-Item $f.FullName (Join-Path $d $f.Name) -Force }
-    Write-Host "  ok: $d"
-}
-if (Test-Path $FlatDest) {
-    foreach ($f in $WinFiles) { Copy-Item $f.FullName (Join-Path $FlatDest $f.Name) -Force }
-    Write-Host "  ok: $FlatDest"
+Write-Host "Syncing windows/ -> GitHub clone + $($ShipDests.Count) IT-facing locations..." -ForegroundColor Cyan
+if (Test-Path $RepoDest) {
+    foreach ($f in $WinFiles) { Copy-Item $f.FullName (Join-Path $RepoDest $f.Name) -Force }
+    Write-Host "  ok: $RepoDest"
 } else {
-    Write-Host "  skip (missing): $FlatDest" -ForegroundColor Yellow
+    Write-Host "  skip (missing): $RepoDest" -ForegroundColor Yellow
+}
+foreach ($d in $ShipDests) {
+    if (-not (Test-Path $d)) { Write-Host "  skip (missing): $d" -ForegroundColor Yellow; continue }
+    foreach ($f in $ShipFiles) { Copy-Item $f.FullName (Join-Path $d $f.Name) -Force }
+    Write-Host "  ok: $d"
 }
 
 # --- 4 + 5. Commit & push -----------------------------------------------------

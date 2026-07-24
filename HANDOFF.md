@@ -1,6 +1,6 @@
 # PCPath — Handoff / Context
 
-Last touched: 2026-07-15. Owner: Marcel Perez.
+Last touched: 2026-07-23. Owner: Marcel Perez.
 
 PCPath converts file paths between Mac (`/Volumes/...`) and Windows (`K:\...`)
 formats via right-click context menu actions on both OSes, plus a no-install
@@ -209,6 +209,24 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 ## Recent work
 
+### Release close-out + portal hygiene (2026-07-23)
+- **Portal publish for 2.4 completed** — the 2026-07-15 session uploaded the 2.4
+  build to the portal but never flipped it live (state was "ahead", live 2.3).
+  Re-ran `publish_version` + upload curl; portal now **in-sync, live 2.4**.
+  `.portal-release.yaml` bump committed (`4cf865b`).
+- **Notion row refreshed** — Recent Changes + Last Code Update now describe the
+  2.4/v1.5.0 UNC release; **Mac Path field set** to
+  `//calamedia/GFX/_library/Tech/DevOps/PCPath/PCPath-app-1.0.1.pkg`, so the
+  portal card now offers the Mac installer (PeepIt convention). **Bump this
+  field when 1.0.2 ships.**
+- **Dev-tooling exclusion actually implemented** — `sync.ps1` had been copying
+  `sync.ps1`/`sync.cmd`/`build_installer.ps1` to `_Out\windows` and `G:\`
+  despite this doc claiming they were excluded. Script now filters IT-facing
+  destinations (GitHub clone still gets everything); stray copies deleted from
+  both locations (`116e122`).
+- Legacy `.workflow` folders left on `G:\` on purpose — still the install path
+  for ≤ macOS 15 until the Kandji rollout replaces them.
+
 ### UNC input support + 2.4 release (2026-07-15)
 - All five conversion surfaces (Windows PS scripts, Mac `paste_mac_path.sh`, Mac
   `PathConverter.swift`, web) now accept `\\server\share\...` UNC input, mirroring
@@ -263,7 +281,9 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
 
 - **Mac app 1.0.2 rebuild pending** — UNC support committed in
   `PathConverter.swift` + tests; build/sign/notarize per `macapp/README.md` at
-  the next build-Mac session, then update the Kandji pkg.
+  the next build-Mac session, then update the Kandji pkg, the pkg in
+  `_Out/PCPath/mac/` + `G:\`, and the Notion row's **Mac Path** field
+  (currently points at the 1.0.1 pkg).
 - **Mac Finder extension: BUILT + SHIPPED (2026-06-27).** Signed, notarized +
   stapled `PCPath-app-1.0.1.pkg` is in `_Out/PCPath/mac/` and `G:\…\PCPath\`,
   ready to upload to Kandji per `_Out/PCPath/IRU-DEPLOY.md`. The `.pkg` is
@@ -280,7 +300,7 @@ Edit per machine; case-insensitive lookup so `Edit` finds `EDIT`.
   Ships with the next Mac sync. (Was: built `E:\seg` glued, defeating the guard.)
 - **macOS enable step** — Apple requires the user to check Quick Actions in System Settings. No automation possible (Privacy & Security model).
 - **Mac install has no version stamp** — `install.log` exists but no `version.txt` equivalent. Low priority; pkg path (Kandji) has version metadata.
-- **Pre-existing dirty files in git** that this session didn't touch: `kandji/build_pkg.sh`, `kandji/uninstall_mdm.sh`, `pcpath_common.sh`, `remote_install.sh`, `Convert to Mac Path.workflow/Contents/Info.plist`. They're deployed but uncommitted. Inspect with `git diff` and decide before next release.
+- ~~Pre-existing dirty files in git~~ — **resolved**: committed during the 2.4 release session; working tree clean as of 2026-07-23.
 - **The G:\ install location** — sometimes `PCPathInstall.exe` is locked there during a re-sync if a previous installer window is still open. `sync.ps1` warns and continues; user just closes the dialog and re-runs.
 
 ---

@@ -93,16 +93,20 @@ pre-approves the extension; verify on a pilot machine before the full rollout.
 
 ## Config
 
-The extension reads **`~/.pcpath_mappings`** (same file as the shell tool),
-falling back to built-in defaults (`CONTENT=K, GFX=G, EDIT=E, THE_NETWORK=N,
-DEV=V`, strip `_LA`) if it's missing — so the menu still works before the file
-is seeded. Sandbox access to that file is granted by a notarizable
-`temporary-exception.files.home-relative-path` entitlement.
+The mappings file lives in the shared **App Group container**
+`6M993C5R86.com.pcpath.shared` (`PCPathConfig.mappingsURL`) — written by the
+container app, read by both the app and the extension. Both targets are
+sandboxed (mandatory: Finder won't load an unsandboxed Sync extension on
+Tahoe), and a sandboxed process cannot read `~/.pcpath_mappings`; the earlier
+`temporary-exception` home-path entitlement approach was abandoned for this
+reason. `mappingsURL` falls back to `~/.pcpath_mappings` when the container is
+nil (shell tools + unsandboxed dev builds), preserving the cross-tool
+convention. Missing file → built-in defaults (`CONTENT=K, GFX=G, EDIT=E,
+THE_NETWORK=N, DEV=V`, strip `_LA`), so the menu works before seeding.
 
-> If mappings ever silently fall back to defaults on a built/signed copy, verify
-> the entitlement path format (`/.pcpath_mappings`) on the build Mac — the
-> fallback is intentional so a path mismatch degrades gracefully instead of
-> breaking the menu.
+> Sandbox + App Group entitlements are declared in `project.yml` under each
+> target's `entitlements.properties` — **hand-edits to the `.entitlements`
+> files do not survive `xcodegen generate`.**
 
 ## Why this replaces the Automator workflows
 
